@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>铁板神数 · 河洛考刻断</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>易经</text></svg>">
+<script src="lunar.js"></script>
+<script src="tieban-tiaowen.js"></script>
+<script src="tieban-core.js"></script>
+<style>
+:root{
+  --bg:#191815; --card:#23211d; --card2:#2b2823; --ink:#e8e0d0; --muted:#9a917d;
+  --line:#3d382f; --accent:#c9a227; --accent2:#8a6d1d; --red:#b5533c; --ok:#4e8b5a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Microsoft YaHei","PingFang SC","Noto Sans SC",sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+header{background:linear-gradient(135deg,#141310,#2b2417);border-bottom:1px solid var(--line);padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
+header h1{font-size:20px;letter-spacing:3px;color:var(--accent);font-weight:600}
+header h1 small{font-size:12px;color:var(--muted);letter-spacing:1px;margin-left:10px;font-weight:400}
+header .links a{color:var(--muted);font-size:12.5px;text-decoration:none;margin-left:14px;border:1px solid var(--line);padding:4px 12px;border-radius:14px}
+header .links a:hover{color:var(--accent);border-color:var(--accent2)}
+.wrap{max-width:1180px;margin:20px auto;padding:0 16px;display:grid;grid-template-columns:320px 1fr;gap:18px;align-items:start}
+@media(max-width:900px){.wrap{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}
+.card h2{font-size:14.5px;color:var(--accent);margin-bottom:14px;letter-spacing:1px;border-bottom:1px dashed var(--line);padding-bottom:8px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+input[type=text],input[type=number],select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#1c1a17;color:var(--ink);font-size:14px;font-family:inherit}
+input:focus,select:focus{outline:2px solid #4d442c;border-color:var(--accent2)}
+.row{display:flex;gap:8px}.row>*{flex:1}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{flex:1;padding:8px 4px;border:none;background:transparent;font-size:13px;cursor:pointer;color:var(--muted);font-family:inherit}
+.seg button.on{background:var(--accent);color:#191815;font-weight:600}
+.check{display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer;margin-top:6px}
+.check input{accent-color:var(--accent);width:15px;height:15px}
+.btn{width:100%;padding:11px;border:none;border-radius:9px;background:linear-gradient(135deg,#c9a227,#a3821f);color:#191815;font-size:15px;letter-spacing:4px;cursor:pointer;font-family:inherit;font-weight:600;margin-top:6px}
+.btn:hover{filter:brightness(1.1)}
+.hint{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.6}
+/* tabs */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px;flex-wrap:wrap}
+.tabs button{padding:9px 16px;border:none;background:transparent;color:var(--muted);font-size:13.5px;cursor:pointer;border-radius:8px 8px 0 0;font-family:inherit}
+.tabs button.on{color:var(--accent);background:var(--card);border:1px solid var(--line);border-bottom-color:var(--card)}
+.pane{display:none}.pane.on{display:block}
+/* 四柱简表 */
+.pz{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.pz .col{min-width:72px;text-align:center;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:10px 6px}
+.pz .col .k{font-size:11px;color:var(--muted);letter-spacing:2px}
+.pz .col .gz{font-size:22px;font-weight:600;margin:6px 0 2px;letter-spacing:2px}
+.pz .col .s{font-size:10.5px;color:var(--muted)}
+.numrow{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+.numrow .n{background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:8px 14px;text-align:center}
+.numrow .n b{display:block;font-size:19px;color:var(--accent)}
+.numrow .n span{font-size:11px;color:var(--muted)}
+/* 卦画 */
+.gua-flex{display:flex;gap:14px;flex-wrap:wrap}
+.gua-card{flex:1;min-width:150px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center}
+.gua-card.main{border-color:var(--accent2);box-shadow:0 0 14px rgba(201,162,39,.12)}
+.gua-card .role{font-size:11px;color:var(--muted);letter-spacing:2px}
+.gua-card .gname{font-size:17px;font-weight:600;color:var(--accent);margin:4px 0}
+.gua-card .gsub{font-size:11px;color:var(--muted)}
+.yao-wrap{margin:10px auto 8px;width:88px;display:flex;flex-direction:column;gap:5px}
+.yao{position:relative;height:9px;border-radius:2px}
+.yao.yang{background:linear-gradient(180deg,#e8d9a8,#c9a227)}
+.yao.yin{background:linear-gradient(180deg,#e8d9a8,#c9a227);clip-path:polygon(0 0,42% 0,42% 100%,0 100%,0 100%,58% 100%,58% 0,100% 0,100% 100%,42% 100%)}
+.yao.dong{outline:2px solid var(--red);outline-offset:2px;border-radius:2px}
+.yao-label{font-size:10px;color:var(--muted);margin-top:2px}
+.gua-ding{font-size:12px;color:var(--ink);margin-top:8px;line-height:1.6}
+.gua-ding b{color:var(--accent)}
+/* 考刻表 */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{color:var(--muted);font-weight:400;font-size:12px;letter-spacing:1px}
+tr.locked{background:rgba(201,162,39,.08)}
+.lockbtn{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px;font-family:inherit}
+.lockbtn:hover{color:var(--accent);border-color:var(--accent2)}
+.lockbtn.locked{background:var(--accent);color:#191815;border-color:var(--accent);font-weight:600}
+.shao-tag{display:inline-block;background:rgba(181,83,60,.15);border:1px solid rgba(181,83,60,.4);color:#e0a08d;border-radius:4px;padding:1px 7px;font-size:11px;margin-right:4px}
+/* 条文卡 */
+.tw-card{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-bottom:10px}
+.tw-card .cat{font-size:11px;color:var(--accent);letter-spacing:2px;margin-bottom:6px}
+.tw-card .txt{font-size:15px;letter-spacing:1px;line-height:1.7}
+.tw-card .sub{font-size:11px;color:var(--muted);margin-top:4px}
+.notice{background:rgba(181,83,60,.1);border:1px solid rgba(181,83,60,.35);border-radius:8px;padding:10px 14px;font-size:12.5px;color:#d9b09c;margin-bottom:14px;line-height:1.7}
+.doc{font-size:13px;line-height:2;color:var(--ink)}
+.doc h3{color:var(--accent);font-size:14px;margin:16px 0 6px}
+.doc table{margin:8px 0}
+.doc code{background:#1c1a17;border:1px solid var(--line);border-radius:4px;padding:1px 6px;font-size:12px;color:var(--accent)}
+.doc .mut{color:var(--muted);font-size:12px}
+footer{max-width:1180px;margin:12px auto 30px;padding:0 16px;font-size:11.5px;color:var(--muted);line-height:1.8}
+#errBox{background:rgba(181,83,60,.15);border:1px solid rgba(181,83,60,.4);color:#e0a08d;border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:12px;display:none}
+.empty{color:var(--muted);font-size:13px;text-align:center;padding:30px 0}
+</style>
+</head>
+<body>
+<header>
+  <h1>铁板神数<small>河洛起卦 · 考刻分 · 条文断</small></h1>
+  <div class="links"><a href="index.html">← 八字排盘</a><a href="https://github.com/exiadynames2026/xuanxue" target="_blank">GitHub</a></div>
+</header>
+
+<div class="wrap">
+  <div>
+    <div class="card" style="margin-bottom:18px">
+      <h2>出生信息</h2>
+      <div id="errBox"></div>
+      <div class="field"><label>姓名（可选）</label><input type="text" id="inName" placeholder="例：李四" maxlength="20"></div>
+      <div class="field"><label>性别</label>
+        <div class="seg" id="segGender"><button data-v="1" class="on">乾造（男）</button><button data-v="0">坤造（女）</button></div>
+      </div>
+      <div class="field"><label>历法</label>
+        <div class="seg" id="segCal"><button data-v="solar" class="on">公历</button><button data-v="lunar">农历</button></div>
+      </div>
+      <div class="field"><label id="lbDate">出生日期（公历）</label>
+        <div class="row" id="rowSolar">
+          <input type="number" id="inY" value="1985" min="1900" max="2100"><input type="number" id="inM" value="8" min="1" max="12"><input type="number" id="inD" value="20" min="1" max="31">
+        </div>
+        <div class="row" id="rowLunar" style="display:none">
+          <input type="number" id="inLY" value="1985" min="1900" max="2100"><input type="number" id="inLM" value="7" min="1" max="12"><input type="number" id="inLD" value="5" min="1" max="30">
+        </div>
+        <label class="check" id="chkLeapWrap" style="display:none"><input type="checkbox" id="inLeap"> 闰月</label>
+      </div>
+      <div class="field"><label>出生时间</label>
+        <div class="row">
+          <select id="inH"></select>
+          <select id="inMin"><option value="0">0分</option><option value="10">10分</option><option value="20">20分</option><option value="30" selected>30分</option><option value="40">40分</option><option value="50">50分</option></select>
+        </div>
+      </div>
+      <div class="field"><label>出生地（真太阳时校正）</label><select id="inCity"></select></div>
+      <button class="btn" id="btnGo">起 卦 推 数</button>
+    </div>
+    <div class="card">
+      <h2>铁板神数是什么</h2>
+      <div class="doc" style="font-size:12px;line-height:1.9;color:var(--muted)">
+        相传为北宋邵雍（康节先生）所创，以"河洛起卦、考时定刻、按数取条文"著称，断六亲生肖如铁板钉钉，故名<b style="color:var(--accent)">铁板</b>。其真传加则与万二千条条文历来秘传，本软件按公开可考的体系完整实现推演流程，条文为示例库，可自行替换。
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="tabs" id="tabs">
+      <button data-p="p1" class="on">① 盘面</button>
+      <button data-p="p2">② 河洛卦象</button>
+      <button data-p="p3">③ 考刻分</button>
+      <button data-p="p4">④ 条文断</button>
+      <button data-p="p5">⑤ 大限流年</button>
+      <button data-p="p6">⑥ 起例说明</button>
+    </div>
+    <div class="pane on" id="p1"><div class="empty">请先在左侧输入出生时间并起卦</div></div>
+    <div class="pane" id="p2"><div class="empty">起卦后显示河洛卦象</div></div>
+    <div class="pane" id="p3"><div class="empty">起卦后进行考刻分</div></div>
+    <div class="pane" id="p4"><div class="empty">锁定刻分后输出条文</div></div>
+    <div class="pane" id="p5"><div class="empty">锁定刻分后输出大限流年</div></div>
+    <div class="pane" id="p6"></div>
+  </div>
+</div>
+
+<footer>
+  历法内核 lunar-javascript（MIT）· 起卦体系：河洛理数（太玄数加则）· 条文为本仓库自撰示例库（tieban-tiaowen.js，可替换）· 本软件仅供传统文化学习与娱乐，铁板神数真传与市面流传各派均有出入，切勿迷信。
+</footer>
+
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const GAN=["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"], ZHI=["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
+const SHENG_XIAO=["鼠","牛","虎","兔","龙","蛇","马","羊","猴","鸡","狗","猪"];
+const NAYIN = LunarUtil.NAYIN, SHI_SHEN = LunarUtil.SHI_SHEN;
+const TRIG = window.TRIGRAM, TW = window.TIAOWEN, DING = window.GUA64_DING;
+const SHICHEN_NAME=["子时","丑时","寅时","卯时","辰时","巳时","午时","未时","申时","酉时","戌时","亥时"];
+
+const CITIES = [["北京",116.41],["天津",117.20],["上海",121.47],["重庆",106.55],["石家庄",114.51],["太原",112.55],["呼和浩特",111.75],["沈阳",123.43],["大连",121.61],["长春",125.32],["哈尔滨",126.53],["南京",118.78],["苏州",120.58],["杭州",120.15],["宁波",121.55],["合肥",117.28],["福州",119.30],["厦门",118.09],["南昌",115.86],["济南",117.12],["青岛",120.38],["郑州",113.63],["武汉",114.31],["长沙",113.00],["广州",113.26],["深圳",114.06],["南宁",108.37],["海口",110.32],["成都",104.07],["贵阳",106.71],["昆明",102.83],["拉萨",91.11],["西安",108.94],["兰州",103.83],["西宁",101.78],["银川",106.23],["乌鲁木齐",87.62],["香港",114.17],["澳门",113.55],["台北",121.56]];
+
+/* ====== 真太阳时（与八字排盘页同源） ====== */
+function eotMinutes(y,m,d){
+  const n = Math.floor((Date.UTC(y,m-1,d)-Date.UTC(y,0,1))/86400000)+1;
+  const B = 2*Math.PI*(n-1)/365;
+  return 229.18*(0.000075+0.001868*Math.cos(B)-0.032077*Math.sin(B)-0.014615*Math.cos(2*B)-0.040849*Math.sin(2*B));
+}
+
+/* ====== 全局状态 ====== */
+let S = null;      // 排盘+卦象上下文
+let segVal = { gender:1, cal:"solar" };
+let lockedKe = null; // 锁定刻 0-7
+
+/* ====== 输入控件 ====== */
+(function(){
+  const h=$("#inH");
+  for(let i=0;i<24;i++){ const o=document.createElement("option"); o.value=i; o.textContent=String(i).padStart(2,"0")+"点 "+SHICHEN_NAME[Math.floor(((i+1)%24)/2)]; h.appendChild(o); }
+  h.value=10;
+  const c=$("#inCity"); const n=document.createElement("option"); n.value=""; n.textContent="不校正（按北京时间）"; c.appendChild(n);
+  CITIES.forEach((x,i)=>{ const o=document.createElement("option"); o.value=i; o.textContent=x[0]; c.appendChild(o); });
+})();
+function bindSeg(id,key,cb){
+  $("#"+id).querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
+    $("#"+id).querySelectorAll("button").forEach(x=>x.classList.remove("on")); b.classList.add("on");
+    segVal[key]=b.dataset.v==="0"?0:b.dataset.v; if(cb)cb(b.dataset.v);
+  }));
+}
+bindSeg("segGender","gender");
+bindSeg("segCal","cal",v=>{
+  $("#rowSolar").style.display=v==="solar"?"":"none"; $("#rowLunar").style.display=v==="lunar"?"":"none";
+  $("#chkLeapWrap").style.display=v==="lunar"?"":"none"; $("#lbDate").textContent=v==="solar"?"出生日期（公历）":"出生日期（农历）";
+});
+$("#tabs").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
+  $("#tabs").querySelectorAll("button").forEach(x=>x.classList.remove("on")); b.classList.add("on");
+  document.querySelectorAll(".pane").forEach(p=>p.classList.remove("on")); $("#"+b.dataset.p).classList.add("on");
+}));
+function showError(m){ const e=$("#errBox"); e.textContent=m; e.style.display="block"; setTimeout(()=>e.style.display="none",5000); }
+
+/* ====== 主流程 ====== */
+function build(){
+  const isLunar=segVal.cal==="lunar";
+  let y,m,d; const h=+$("#inH").value, min=+$("#inMin").value;
+  try{
+    if(isLunar){ y=+$("#inLY").value; m=+$("#inLM").value; d=+$("#inLD").value; if($("#inLeap").checked)m=-m;
+      var solar=Lunar.fromYmdHms(y,m,d,h,min,0).getSolar();
+    } else { y=+$("#inY").value; m=+$("#inM").value; d=+$("#inD").value; solar=Solar.fromYmdHms(y,m,d,h,min,0); }
+  }catch(e){ showError("日期无效："+e.message); return null; }
+
+  let tst=null;
+  const ci=$("#inCity").value;
+  if(ci!==""){
+    const [cn,lon]=CITIES[+ci];
+    const lonMin=(lon-120)*4, eot=eotMinutes(solar.getYear(),solar.getMonth(),solar.getDay());
+    const js=new Date(solar.getYear(),solar.getMonth()-1,solar.getDay(),solar.getHour(),solar.getMinute(),0);
+    js.setTime(js.getTime()+(lonMin+eot)*60000);
+    tst={city:cn,total:Math.round((lonMin+eot)*10)/10};
+    solar=Solar.fromYmdHms(js.getFullYear(),js.getMonth()+1,js.getDate(),js.getHours(),js.getMinutes(),0);
+  }
+  const lunar=solar.getLunar(), ec=lunar.getEightChar(); ec.setSect(2);
+  const pillars=[
+    {label:"年柱",gan:ec.getYearGan(),zhi:ec.getYearZhi()},
+    {label:"月柱",gan:ec.getMonthGan(),zhi:ec.getMonthZhi()},
+    {label:"日柱",gan:ec.getDayGan(),zhi:ec.getDayZhi()},
+    {label:"时柱",gan:ec.getTimeGan(),zhi:ec.getTimeZhi()}
+  ];
+  pillars.forEach(p=>{ p.ganzhi=p.gan+p.zhi; p.nayin=NAYIN[p.ganzhi]; p.ss=(p.label==="日柱")?"日元":SHI_SHEN[pillars[2].gan+p.gan]; });
+  const gua=qiGua(pillars);
+  return { name:$("#inName").value.trim()||"无名氏", gender:segVal.gender, solar, lunar, pillars, gua, tst };
+}
+
+// 考刻钟面区间：核心模块 keRange(小时, 刻序) —— 勿在顶层声明同名函数，避免遮蔽核心全局
+const keRangeOf = (h, k) => window.keRange(h, k);
+
+function renderP1(){
+  const g=S.gua;
+  $("#p1").innerHTML = `
+    <div class="notice">${S.name} · ${S.gender===1?"乾造":"坤造"} · 公历 ${S.solar.toYmdHms().substring(0,16)} · 农历 ${S.lunar.toString()}${S.tst?` · 真太阳时校正（${S.tst.city}，约 ±${S.tst.total} 分）`:""}</div>
+    <div class="pz">${S.pillars.map(p=>`<div class="col"><div class="k">${p.label}</div><div class="gz">${p.ganzhi}</div><div class="s">${p.ss} · ${p.nayin}</div></div>`).join("")}</div>
+    <div class="numrow">
+      <div class="n"><b>${g.tianSum}</b><span>天数（四柱天干太玄数和）</span></div>
+      <div class="n"><b>${g.diSum}</b><span>地数（四柱地支太玄数和）</span></div>
+      <div class="n"><b>${g.txYear}</b><span>年柱太玄数</span></div>
+      <div class="n"><b>${g.dong}</b><span>动爻</span></div>
+    </div>
+    <div class="hint">天数 ÷8 取余 → 上卦；地数 ÷8 取余 → 下卦；(天数+地数) ÷6 取余 → 动爻（此为河洛起卦通行口径，详见"起例说明"）。</div>`;
+}
+
+function yaoHtml(lines, dong){
+  return `<div class="yao-wrap">`+lines.map((v,i)=>{
+    const isDong = dong && i===dong-1;
+    return `<div class="yao ${v?"yang":"yin"} ${isDong?"dong":""}"></div>`;
+  }).join("")+`<div class="yao-label">上 ↑ 下 ↓${dong?` · <span style="color:var(--red)">${dong}爻动</span>`:""}</div></div>`;
+}
+function guaCard(role, g, dong){
+  return `<div class="gua-card ${role==="本卦"?"main":""}">
+    <div class="role">${role}</div>
+    <div class="gname">${g.name}</div>
+    <div class="gsub">${TRIG[g.u].name}上${TRIG[g.l].name}下 · 先天 ${g.u}·${g.l} · 通行第${g.xu}卦</div>
+    ${yaoHtml(g.lines, role==="本卦"?dong:null)}
+    <div class="gua-ding"><b>断</b>：${DING[g.name]||"—"}</div>
+  </div>`;
+}
+function renderP2(){
+  const g=S.gua;
+  $("#p2").innerHTML = `<div class="gua-flex">
+    ${guaCard("本卦",g.ben,g.dong)}${guaCard("变卦",g.bian)}${guaCard("互卦",g.hu)}${guaCard("错卦",g.cuo)}${guaCard("综卦",g.zong)}
+  </div>
+  <div class="hint" style="margin-top:12px">动爻（第${g.dong}爻）阴阳一变而成变卦，此即"卦变"——铁板条文皆从本变二卦取数；互卦观中间过程，错卦观对面对立，综卦观倒看角度。</div>`;
+}
+
+function renderP3(){
+  const g=S.gua;
+  let rows="";
+  for(let k=0;k<8;k++){
+    const tw=pickTW("父母",k*3,g,k);
+    const tags=[tw.father?`<span class="shao-tag">父肖${tw.father}</span>`:"",tw.mother?`<span class="shao-tag">母肖${tw.mother}</span>`:"",tw.fatherGone?`<span class="shao-tag">父先逝</span>`:"",tw.motherGone?`<span class="shao-tag">母先逝</span>`:""].join("");
+    rows+=`<tr class="${lockedKe===k?"locked":""}">
+      <td>第${k+1}刻<br><span style="color:var(--muted);font-size:11px">${keRangeOf(S.solar.getHour(), k)}</span></td>
+      <td>${tw.t}</td>
+      <td>${tags||"—"}</td>
+      <td><button class="lockbtn ${lockedKe===k?"locked":""}" data-k="${k}">${lockedKe===k?"已锁定":"核验"}</button></td>
+    </tr>`;
+  }
+  $("#p3").innerHTML = `
+    <div class="notice"><b>考时定刻</b>是铁板神数的第一步：一时辰分八刻，每刻各有一条六亲（父母）条文。请对照您<b>真实的父母生肖或情形</b>，点选相符那一刻的"核验"——锁定后，全盘条文即按该刻取数。</div>
+    <table><tr><th style="width:90px">刻分</th><th>条文</th><th style="width:150px">核验点</th><th style="width:80px">操作</th></tr>${rows}</table>`;
+  $("#p3").querySelectorAll(".lockbtn").forEach(b=>b.addEventListener("click",()=>{ lockedKe=+b.dataset.k; renderP3(); renderP4(); renderP5(); }));
+}
+
+function renderP4(){
+  if(lockedKe===null){ $("#p4").innerHTML='<div class="empty">请先在"③ 考刻分"中锁定刻分</div>'; return; }
+  const cats=["父母","兄弟","婚姻","子女","性情","财帛","事业","运程"];
+  $("#p4").innerHTML = `<div class="notice">已锁定 <b style="color:var(--accent)">第${lockedKe+1}刻</b>。以下条文按公开取数式从示例库取出，每类三条（相位 0/1/2）。</div>`
+    + cats.map(cat=>{
+      const items=[0,1,2].map(ph=>pickTW(cat,ph,S.gua,lockedKe));
+      return `<div class="tw-card"><div class="cat">${cat}类</div>
+        ${items.map(t=>`<div class="txt">「${t.t}」</div>`).join("")}
+        <div class="sub">类别共 ${TW[cat].length} 条示例条文</div></div>`;
+    }).join("");
+}
+
+function renderP5(){
+  if(lockedKe===null){ $("#p5").innerHTML='<div class="empty">请先在"③ 考刻分"中锁定刻分</div>'; return; }
+  const g=S.gua;
+  // 大限卦轮：本→变→互→错→综→变互→变错→变综
+  const bianHu=guaFromLines([g.bian.lines[1],g.bian.lines[2],g.bian.lines[3],g.bian.lines[2],g.bian.lines[3],g.bian.lines[4]]);
+  const bianCuo=guaFromLines(g.bian.lines.map(v=>1-v));
+  const bianZong=guaFromLines(g.bian.lines.slice().reverse());
+  const wheel=[g.ben,g.bian,g.hu,g.cuo,g.zong,bianHu,bianCuo,bianZong];
+  let dxRows="";
+  for(let i=0;i<8;i++){
+    const tw=pickTW("运程",i*4,g,lockedKe+i);
+    dxRows+=`<tr><td>${i*10+1}–${i*10+10}岁</td><td><b style="color:var(--accent)">${wheel[i].name}</b><br><span style="color:var(--muted);font-size:11px">${DING[wheel[i].name]}</span></td><td>「${tw.t}」</td></tr>`;
+  }
+  // 流年：未来12年
+  const birthY=S.solar.getYear(), thisY=new Date().getFullYear();
+  let lnRows="";
+  for(let i=1;i<=12;i++){
+    const y=birthY+i; if(y>thisY+1) break;
+    const gz=Solar.fromYmd(y,6,15).getLunar().getYearInGanZhi();
+    const tw=pickTW("运程",i,g,lockedKe+i);
+    const age=y-birthY+1;
+    lnRows+=`<tr><td>${y}</td><td>${age}岁</td><td><b>${gz}</b></td><td>「${tw.t}」</td></tr>`;
+  }
+  $("#p5").innerHTML = `
+    <h2 style="font-size:14.5px;color:var(--accent);margin-bottom:10px">大限（每限十年，卦轮式）</h2>
+    <table><tr><th style="width:110px">限龄</th><th style="width:170px">限卦</th><th>运程条文</th></tr>${dxRows}</table>
+    <h2 style="font-size:14.5px;color:var(--accent);margin:18px 0 10px">流年（已过与当年）</h2>
+    <table><tr><th style="width:70px">公历年</th><th style="width:70px">虚岁</th><th style="width:80px">年柱</th><th>运程条文</th></tr>${lnRows}</table>`;
+}
+
+/* ====== 起例说明（完整算法文档） ====== */
+$("#p6").innerHTML = `<div class="doc">
+  <h3>一、与真传铁板的关系（必读）</h3>
+  铁板神数真传的加则法与万二千条条文历来秘传，各派（金陵本、皇极本、大定本……）互有出入，<b>市面上不存在"标准铁板算法"</b>。本软件完整实现其公开可考的推演框架——<b>河洛理数起卦 → 考时定刻 → 按数取条文</b>，取数公式与条文示例库全部公开、可复现、可替换。您若持有师传条文库，替换 <code>tieban-tiaowen.js</code> 即可套用本引擎。
+  <h3>二、太玄数表（干支化数）</h3>
+  <table><tr><th>干支组</th><td>甲己子午</td><td>乙庚丑未</td><td>丙辛寅申</td><td>丁壬卯酉</td><td>戊癸辰戌</td><td>巳亥</td></tr><tr><th>数</th><td>9</td><td>8</td><td>7</td><td>6</td><td>5</td><td>4</td></tr></table>
+  <span class="mut">出自扬雄《太玄》，大六壬与铁板各派通行引用。</span>
+  <h3>三、河洛起卦式</h3>
+  天数 = 四柱四天干太玄数之和；地数 = 四柱四地支太玄数之和。<br>
+  上卦 = (天数−1) mod 8 + 1 → 先天数（乾1兑2离3震4巽5坎6艮7坤8）；下卦 = (地数−1) mod 8 + 1；<br>
+  动爻 = (天数+地数−1) mod 6 + 1。本卦既得，动爻阴阳一变即变卦；互卦取二三四爻为下、三四五爻为上；错卦六爻全变；综卦六爻颠倒。
+  <h3>四、考时定刻</h3>
+  一时辰（两小时）分八刻，每刻十五分钟。铁板以六亲核验定刻：对每一刻按取数式各取一条父母类条文，请命主核对<b>父母生肖/情形</b>，相符之刻即为命主的"真刻"。锁定真刻后，全盘条文、大限、流年均以该刻为参数取数——这就是"铁板神数先考刻、后断事"的核心流程。
+  <h3>五、条文取数式（示例派，公开）</h3>
+  <code>哈希 = 本卦通行序×131 + 变卦通行序×37 + 动爻×7 + 年柱太玄数×11 + 相位×7 + 刻数×2 + 1013</code><br>
+  <code>条文 = 条文库[类别][ 哈希 mod 该类条数 ]</code><br>
+  相位用于同类多条轮转（条文断每类取相位 0/1/2；大限相位 = 限序×4；流年相位 = 年序）。同盘同刻同问 → 恒取同条，完全确定。
+  <h3>六、大限卦轮</h3>
+  八步大限依次取：本卦 → 变卦 → 互卦 → 错卦 → 综卦 → 变卦互卦 → 变卦错卦 → 变卦综卦，每限十年，各配运程类条文。
+  <h3>七、免责</h3>
+  条文为本仓库<b>自撰示例</b>（风格仿铁板，非任何秘本），仅供演示与学习；命理输出不构成任何人生建议。
+</div>`;
+
+/* ====== 启动 ====== */
+$("#btnGo").addEventListener("click",()=>{
+  const data=build(); if(!data) return;
+  S=data; lockedKe=null;
+  renderP1(); renderP2(); renderP3();
+  $("#p4").innerHTML='<div class="empty">请先在"③ 考刻分"中锁定刻分</div>';
+  $("#p5").innerHTML='<div class="empty">请先在"③ 考刻分"中锁定刻分</div>';
+  $("#tabs").querySelectorAll("button")[0].click();
+});
+window.addEventListener("load",()=>{ $("#btnGo").click(); });
+</script>
+</body>
+</html>
