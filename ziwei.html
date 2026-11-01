@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>紫微斗数 · 安星命盘</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>紫</text></svg>">
+<link rel="stylesheet" href="common.css">
+<script src="lunar.js"></script>
+<script src="ziwei-core.js"></script>
+<script src="nav.js"></script>
+<style>
+.zw-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-width:760px}
+.zw-cell{background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:8px;min-height:118px;font-size:12px;position:relative}
+.zw-cell.ming{border-color:var(--accent2);box-shadow:0 0 10px rgba(201,162,39,.1)}
+.zw-cell .gong{font-size:12px;color:var(--muted)}
+.zw-cell.ming .gong{color:var(--accent);font-weight:600}
+.zw-cell .gz{font-size:11px;color:var(--blue)}
+.zw-cell .dx{font-size:10px;color:var(--muted)}
+.zw-cell .stars{margin-top:5px;line-height:1.65}
+.zw-cell .stars b{color:#e8d9a8;font-weight:600}
+.zw-cell .stars span{color:var(--ink)}
+.zw-cell .shen{position:absolute;top:6px;right:8px;font-size:10px;color:var(--red)}
+.zw-center{background:#26231e;display:flex;flex-direction:column;justify-content:center;gap:6px;grid-column:2/4;grid-row:2/4;padding:14px;font-size:12.5px;line-height:1.9}
+.zw-center b{color:var(--accent)}
+.sx-table{margin-top:14px}
+</style>
+</head>
+<body>
+<header>
+  <div class="hrow">
+    <h1>紫微斗数<small>中州全书口径 · 全盘安星</small></h1>
+    <a class="gh" href="https://github.com/exiadynames2026/xuanxue" target="_blank">GitHub</a>
+  </div>
+  <nav></nav>
+</header>
+<div class="wrap">
+  <div>
+    <div class="card" style="margin-bottom:18px">
+      <h2>出生信息</h2>
+      <div class="err" id="errBox"></div>
+      <div class="field"><label>公历出生日期与时间</label>
+        <div class="row">
+          <input type="number" id="inY" value="1990" min="1900" max="2100">
+          <input type="number" id="inM" value="5" min="1" max="12">
+          <input type="number" id="inD" value="28" min="1" max="31">
+          <select id="inHZ"></select>
+        </div>
+      </div>
+      <div class="field"><label>性别（定大限顺逆）</label>
+        <div class="seg" id="segGender"><button data-v="1" class="on">男</button><button data-v="0">女</button></div>
+      </div>
+      <button class="btn" id="btnGo">安 星 布 盘</button>
+    </div>
+    <div class="card">
+      <h2>紫微斗数是什么</h2>
+      <div class="doc" style="font-size:12px;line-height:1.9;color:var(--muted)">
+        相传为五代陈抟（希夷先生）所创，以紫微星为首的一百多颗虚星布入十二宫，"<b>帝座之学</b>"。与八字并称命学双璧：八字重五行生克之势，紫微重星曜宫位之象。本页安星含十四主星、禄存羊陀、魁钺昌曲辅弼、火铃空劫及生年四化，按《紫微斗数全书》通行口径。
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div id="result"><div class="empty">请先安星</div></div>
+  </div>
+</div>
+<footer></footer>
+<script>
+"use strict";
+XXNav.render("紫微斗数"); XXNav.footer();
+const $=s=>document.querySelector(s);
+const SHICHEN=["子时","丑时","寅时","卯时","辰时","巳时","午时","未时","申时","酉时","戌时","亥时"];
+const ZHI=["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
+let gender=1;
+(function(){ const s=$("#inHZ"); ZHI.forEach((z,i)=>{const o=document.createElement("option");o.value=z;o.textContent=SHICHEN[i];s.appendChild(o);}); s.value="午"; })();
+$("#segGender").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
+  $("#segGender").querySelectorAll("button").forEach(x=>x.classList.remove("on")); b.classList.add("on");
+  gender=+b.dataset.v;
+}));
+$("#btnGo").addEventListener("click",()=>{
+  try{
+    const solar=Solar.fromYmdHms(+$("#inY").value,+$("#inM").value,+$("#inD").value,12,0,0);
+    const lunar=solar.getLunar();
+    const hourZhi=$("#inHZ").value;
+    const c=ZiWei.anXing(lunar.getYearGanExact(), lunar.getYearZhiExact(), Math.abs(lunar.getMonth()), lunar.getDay(), hourZhi, gender);
+    render(c, lunar);
+  }catch(e){ const b=$("#errBox"); b.textContent=e.message; b.style.display="block"; setTimeout(()=>b.style.display="none",5000); }
+});
+// 4x4 宫位排布：巳午未申 / 辰 中 酉 / 卯 中 戌 / 寅丑子亥
+const LAYOUT=[["巳",3],["午",4],["未",5],["申",6],["辰",2],null,["酉",7],["卯",1],null,["戌",8],["寅",0],["丑",11],["子",10],["亥",9]];
+function render(c, lunar){
+  const PAL=ZiWei.PAL;
+  const starsOf = palIdx => (c.starMap[palIdx]||[]);
+  const dxOf = palIdx => c.daxian.find(d=>d.palace===palIdx);
+  let cells="";
+  // 按 grid 顺序：巳 午 未 申 | 辰 [中] 酉 | 卯 [中] 戌 | 寅 丑 子 亥
+  const order=["巳","午","未","申","辰",null,"酉","卯",null,"戌","寅","丑","子","亥"];
+  let centerDone=false;
+  order.forEach(z=>{
+    if(z===null){ if(!centerDone){
+      cells+=`<div class="zw-center">
+        <div><b>${lunar.getYearGanExact()}${lunar.getYearZhiExact()}年</b> · 农历${Math.abs(lunar.getMonth())}月${lunar.getDay()}日 ${$("#inHZ").value}时 · ${gender===1?"乾造":"坤造"}</div>
+        <div>五行局：<b>${c.wx}${c.ju}局</b>（命宫 ${c.mingGanZhi}，纳音${c.nayin}）</div>
+        <div>命宫：<b>${PAL[c.mingPal]}</b> · 身宫：<b>${PAL[c.shenPal]}</b> · 大限${c.forward?"顺行":"逆行"}，${c.ju}岁起限</div>
+        <div style="color:var(--muted);font-size:11px">十四主星 + 禄存擎羊陀罗 + 魁钺昌曲辅弼 + 火铃空劫 + 生年四化。安星未含庙旺亮度、自化、大限流年四化，供学习参考。</div>
+      </div>`; centerDone=true; }
+      return; }
+    const i=(ZHI.indexOf(z)+10)%12; // 核心索引以寅=0（ZHI 子=0，需换算）
+    const gong=c.gongName[i], gz=c.gongGan[i], dx=dxOf(i);
+    const stars=starsOf(i);
+    const isMing = c.mingPal===i;
+    const isShen = c.shenPal===i;
+    cells+=`<div class="zw-cell ${isMing?"ming":""}">
+      ${isShen?'<span class="shen">身宫</span>':""}
+      <div class="gong">${gong}${isMing?" ★":""}</div>
+      <div class="gz">${gz} · ${dx?dx.from+"–"+dx.to+"岁":""}</div>
+      <div class="stars">${stars.length?stars.map(s=>{
+        const main=["紫微","天机","太阳","武曲","天同","廉贞","天府","太阴","贪狼","巨门","天相","天梁","七杀","破军"].some(k=>s.startsWith(k));
+        const hua=/化[禄权科忌]/.test(s);
+        return main?`<b>${s}</b>`:(hua?`<span style="color:var(--red)">${s}</span>`:`<span>${s}</span>`);
+      }).join("<br>"):"<span style='color:var(--muted)'>空宫（借对宫）</span>"}</div>
+    </div>`;
+  });
+  $("#result").innerHTML=`<div class="zw-grid">${cells}</div>
+  <div class="hint" style="margin-top:12px">★ 为命宫，右上"身宫"标记身宫所在。四化标红（禄权科忌）。大限岁数为虚岁区间。空宫可借对宫主星参断。</div>`;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>梅花易数 · 起卦断</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>梅</text></svg>">
+<link rel="stylesheet" href="common.css">
+<script src="lunar.js"></script>
+<script src="tieban-tiaowen.js"></script>
+<script src="meihua-core.js"></script>
+<script src="nav.js"></script>
+<style>
+.gua-line{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.gl-card{flex:1;min-width:170px;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center}
+.gl-card.main{border-color:var(--accent2)}
+.gl-card .k{font-size:11px;color:var(--muted);letter-spacing:2px}
+.gl-card .n{font-size:17px;color:var(--accent);font-weight:600;margin:4px 0}
+.gl-card .s{font-size:11.5px;color:var(--muted);line-height:1.7}
+.lx{background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:12px;line-height:1.9;margin-bottom:8px}
+.lx b{color:var(--accent)}
+</style>
+</head>
+<body>
+<header>
+  <div class="hrow">
+    <h1>梅花易数<small>观梅占起 · 体用生克</small></h1>
+    <a class="gh" href="https://github.com/exiadynames2026/xuanxue" target="_blank">GitHub</a>
+  </div>
+  <nav></nav>
+</header>
+<div class="wrap">
+  <div>
+    <div class="card" style="margin-bottom:18px">
+      <h2>起卦</h2>
+      <div class="err" id="errBox"></div>
+      <div class="field"><label>起卦方式</label>
+        <div class="seg" id="segMode"><button data-v="time" class="on">时间起卦</button><button data-v="num">数字起卦</button></div>
+      </div>
+      <div id="timePanel">
+        <div class="field"><label>公历日期时间（自动转农历取数）</label>
+          <div class="row">
+            <input type="number" id="inY" value="2026" min="1900" max="2100">
+            <input type="number" id="inM" value="11" min="1" max="12">
+            <input type="number" id="inD" value="2" min="1" max="31">
+            <input type="number" id="inH" value="12" min="0" max="23">
+          </div>
+        </div>
+      </div>
+      <div id="numPanel" style="display:none">
+        <div class="field"><label>数一（上卦）</label><input type="number" id="inN1" value="7" min="1"></div>
+        <div class="field"><label>数二（下卦）</label><input type="number" id="inN2" value="8" min="1"></div>
+        <div class="field"><label>起卦时辰（取动爻用）</label>
+          <select id="inHZ"></select>
+        </div>
+      </div>
+      <div class="field"><label>所测何事（选类象参考）</label>
+        <select id="inMatter">
+          <option value="">不限</option><option value="ren">测人（看人物类象）</option>
+          <option value="shi">测天时（看天时类象）</option><option value="wu">测物（看器物类象）</option>
+          <option value="bing">测病（看身体部位）</option>
+        </select>
+      </div>
+      <button class="btn" id="btnGo">起 卦</button>
+    </div>
+    <div class="card">
+      <h2>梅花易数是什么</h2>
+      <div class="doc" style="font-size:12px;line-height:1.9;color:var(--muted)">
+        相传为邵雍（康节先生）偶观梅争雀，占之而验，遂成《梅花易数》。其法至简：以数起卦，以卦象断——不必排八字纳甲，只取<b>体用生克、互卦变卦、万物类象</b>。"不问天数，数在其中；不问物象，象在其内。"
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div id="result"><div class="empty">请先起卦</div></div>
+  </div>
+</div>
+<footer></footer>
+<script>
+"use strict";
+XXNav.render("梅花易数"); XXNav.footer();
+const $=s=>document.querySelector(s);
+const SHICHEN=["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
+let mode="time";
+$("#segMode").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
+  $("#segMode").querySelectorAll("button").forEach(x=>x.classList.remove("on")); b.classList.add("on");
+  mode=b.dataset.v;
+  $("#timePanel").style.display=mode==="time"?"":"none";
+  $("#numPanel").style.display=mode==="num"?"":"none";
+}));
+(function(){ const s=$("#inHZ"); SHICHEN.forEach((z,i)=>{const o=document.createElement("option");o.value=i;s.appendChild(o);}); s.value=12; })();
+
+$("#btnGo").addEventListener("click",()=>{
+  try{
+    let g, lunarInfo="";
+    if(mode==="time"){
+      const solar=Solar.fromYmdHms(+$("#inY").value,+$("#inM").value,+$("#inD").value,+$("#inH").value,0,0);
+      const lunar=solar.getLunar();
+      const hz=SHICHEN[Math.floor(((+$("#inH").value+1)%24)/2)];
+      g=MeiHua.shiJianQiGua(lunar.getYearZhi(), Math.abs(lunar.getMonth()), lunar.getDay(), hz);
+      lunarInfo=`${lunar.getYearZhi()}年 农历${Math.abs(lunar.getMonth())}月${lunar.getDay()}日 ${hz}时`;
+    } else {
+      const n1=+$("#inN1").value, n2=+$("#inN2").value;
+      if(!n1||!n2) throw new Error("请输入两个正数");
+      const hz=SHICHEN[+$("#inHZ").value];
+      g=MeiHua.shuZiQiGua(n1,n2,hz);
+      lunarInfo=`数一 ${n1} · 数二 ${n2} · ${hz}时`;
+    }
+    render(g, lunarInfo);
+  }catch(e){ const b=$("#errBox"); b.textContent=e.message; b.style.display="block"; setTimeout(()=>b.style.display="none",5000); }
+});
+
+function render(g, info){
+  const bodyNum = g.yong==="上" ? g.low : g.up;
+  const useNum = g.yong==="上" ? g.up : g.low;
+  const body=MeiHua.LEIXIANG[bodyNum], use=MeiHua.LEIXIANG[useNum];
+  const duan=MeiHua.tiYongDuan(body.wx, use.wx);
+  const jiCls = duan.ji>=2?"green":duan.ji===1?"blue":duan.ji<=-1?"red":"gold";
+  const matter=$("#inMatter").value;
+  const lxShow = key => `<div class="lx"><b>体（${body.name}${body.wx}）</b>：${body[key]}　<b>用（${use.name}${use.wx}）</b>：${use[key]}</div>`;
+  $("#result").innerHTML=`
+    <div class="notice gold">起卦：<b>${info}</b> · 得 <b>${g.name}</b>（通行第${g.xu}卦），第${g.dong}爻动</div>
+    <div class="gua-line">
+      <div class="gl-card main"><div class="k">本卦</div><div class="n">${g.name}</div><div class="s">${g.dong}爻动</div></div>
+      <div class="gl-card"><div class="k">互卦（过程）</div><div class="n">${g.hu}</div><div class="s">事之中间与关联</div></div>
+      <div class="gl-card"><div class="k">变卦（结果）</div><div class="n">${g.bian}</div><div class="s">事之最终趋向</div></div>
+    </div>
+    <div class="notice ${jiCls}">体用：<b>体卦 ${body.name}（${body.wx}）· 用卦 ${use.name}（${use.wx}）——${duan.txt}</b></div>
+    <h2 style="font-size:14px;color:var(--accent);margin:14px 0 8px">万物类象对照</h2>
+    ${matter==="ren"?lxShow("ren"):""}${matter==="shi"?lxShow("shi"):""}${matter==="wu"?lxShow("wu"):""}${matter==="bing"?lxShow("shen"):""}
+    ${matter?"":`<div class="lx"><b>体卦</b>：象${body.xiang} · 人${body.ren} · 身${body.shen} · 物${body.wu} · 时${body.shi}<br><b>用卦</b>：象${use.xiang} · 人${use.ren} · 身${use.shen} · 物${use.wu} · 时${use.shi}</div>`}
+    <div class="hint">断卦次第：先观体用生克定吉凶大势，再以互卦看中间过程、变卦看结局，末以万物类象落实具体人与物。动爻所在之卦为用（事），静卦为体（我）。</div>`;
+}
+</script>
+</body>
+</html>

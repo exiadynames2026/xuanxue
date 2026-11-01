@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>大六壬 · 四课三传</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>壬</text></svg>">
+<link rel="stylesheet" href="common.css">
+<script src="lunar.js"></script>
+<script src="liuren-core.js"></script>
+<script src="nav.js"></script>
+<style>
+.meta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.meta .n{background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:8px 13px;text-align:center}
+.meta .n b{display:block;font-size:16px;color:var(--accent)}
+.meta .n span{font-size:11px;color:var(--muted)}
+.ke-chuan{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.ke-box{flex:1;min-width:280px}
+.ke-cols{display:flex;gap:10px}
+.ke-col{flex:1;text-align:center}
+.ke-col .lbl{font-size:10.5px;color:var(--muted)}
+.ke-col .shang{background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:10px 0;font-size:20px;font-weight:600;color:#e8d9a8}
+.ke-col .xia{background:var(--card);border:1px solid var(--line);border-radius:0 0 8px 8px;padding:6px 0;font-size:15px;color:var(--muted);border-top:none}
+.chuan-col{flex:1;text-align:center}
+.chuan-col .lbl{font-size:10.5px;color:var(--muted);letter-spacing:2px}
+.chuan-col .box{background:var(--card2);border:1px solid var(--accent2);border-radius:10px;padding:12px 0;margin-top:4px}
+.chuan-col .z{font-size:26px;font-weight:700;color:var(--accent)}
+.chuan-col .j{font-size:12px;color:var(--blue);margin-top:2px}
+.chuan-col .q{font-size:11px;color:var(--muted)}
+.tp-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.tp-cell{background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:6px 4px;text-align:center;font-size:12.5px}
+.tp-cell .tj{font-size:10.5px;color:var(--accent)}
+.tp-cell .tian{font-size:16px;font-weight:600;color:#e8d9a8}
+.tp-cell .di{color:var(--muted);font-size:11px}
+</style>
+</head>
+<body>
+<header>
+  <div class="hrow">
+    <h1>大六壬<small>月将加时 · 四课三传</small></h1>
+    <a class="gh" href="https://github.com/exiadynames2026/xuanxue" target="_blank">GitHub</a>
+  </div>
+  <nav></nav>
+</header>
+<div class="wrap">
+  <div>
+    <div class="card" style="margin-bottom:18px">
+      <h2>起课</h2>
+      <div class="err" id="errBox"></div>
+      <div class="field"><label>占时（公历）</label>
+        <div class="row">
+          <input type="number" id="inY" value="2026" min="1900" max="2100">
+          <input type="number" id="inM" value="11" min="1" max="12">
+          <input type="number" id="inD" value="2" min="1" max="31">
+          <select id="inH"></select>
+        </div>
+      </div>
+      <button class="btn" id="btnGo">起 课</button>
+    </div>
+    <div class="card">
+      <h2>大六壬是什么</h2>
+      <div class="doc" style="font-size:12px;line-height:1.9;color:var(--muted)">
+        三式之首，善断人事琐细，古称"卜筮之王"。以<b>月将加时</b>转天地盘，立四课，发三传（贼克/比用/涉害/遥克/昴星/别责/八专/伏吟/返吟九宗门），布十二天将，观传课生克定事体脉络。
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="tabs" id="tabs">
+      <button data-p="pa" class="on">课传</button>
+      <button data-p="pb">天地盘</button>
+      <button data-p="pc">断课指引</button>
+      <button data-p="pd">起例说明</button>
+    </div>
+    <div class="pane on" id="pa"><div class="empty">请先起课</div></div>
+    <div class="pane" id="pb"></div>
+    <div class="pane" id="pc"></div>
+    <div class="pane" id="pd"></div>
+  </div>
+</div>
+<footer></footer>
+<script>
+"use strict";
+XXNav.render("大六壬"); XXNav.footer();
+const $=s=>document.querySelector(s);
+const ZHI=["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
+const WX_COLOR={"木":"#4e8b5a","火":"#b5533c","土":"#9a7b32","金":"#c9a227","水":"#5b84a8"};
+(function(){ const s=$("#inH"); ZHI.forEach((z,i)=>{const o=document.createElement("option");o.value=z;o.textContent=z+"时";s.appendChild(o);}); })();
+$("#btnGo").addEventListener("click",()=>{
+  try{
+    const r=LiuRen.paipan(Solar.fromYmdHms(+$("#inY").value,+$("#inM").value,+$("#inD").value,12,0,0), $("#inH").value);
+    renderPa(r); renderPb(r); renderPc(r);
+    $("#tabs").querySelectorAll("button")[0].click();
+  }catch(e){ const b=$("#errBox"); b.textContent=e.message; b.style.display="block"; setTimeout(()=>b.style.display="none",5000); }
+});
+function renderPa(r){
+  $("#pa").innerHTML=`
+    <div class="meta">
+      <div class="n"><b>${r.dayGz}</b><span>日干支</span></div>
+      <div class="n"><b>${r.hourZhi}时</b><span>占时</span></div>
+      <div class="n"><b>${r.jiang}（${r.jiangName}）</b><span>月将·${r.qi}后</span></div>
+      <div class="n"><b>${r.men}</b><span>取法门</span></div>
+      <div class="n"><b>${r.night?"夜贵":"昼贵"} ${r.tj.ren}</b><span>贵人临${r.tj.renGong}·${r.tj.forward?"顺行":"逆行"}</span></div>
+    </div>
+    <div class="ke-chuan">
+      <div class="ke-box"><div class="lbl" style="font-size:12px;color:var(--accent);letter-spacing:2px;margin-bottom:6px">四　课</div>
+        <div class="ke-cols">${r.ke.map((c,i)=>`<div class="ke-col">
+          <div class="lbl">第${"一二三四"[i]}课</div>
+          <div class="shang">${c.shang}</div>
+          <div class="xia">${c.xia}</div>
+        </div>`).join("")}</div>
+        <div class="hint" style="margin-top:8px">上格为天盘神，下为地盘位。自右向左读亦可：先干课后支课。</div>
+      </div>
+      <div class="ke-box"><div class="lbl" style="font-size:12px;color:var(--accent);letter-spacing:2px;margin-bottom:6px">三　传</div>
+        <div class="ke-cols">${r.chuanDetail.map((c,i)=>`<div class="chuan-col">
+          <div class="lbl">${["初传","中传","末传"][i]}</div>
+          <div class="box">
+            <div class="j">${c.jiang}</div>
+            <div class="z" style="color:${WX_COLOR[c.wx]}">${c.zhi}</div>
+            <div class="q">${c.wx} · ${c.liuQin}</div>
+          </div>
+        </div>`).join("")}</div>
+      </div>
+    </div>`;
+}
+function renderPb(r){
+  // 地盘按 子丑寅…顺排；显示天将/天盘/地盘
+  $("#pb").innerHTML=`<div class="tp-grid">${ZHI.map(z=>`
+    <div class="tp-cell">
+      <div class="tj">${r.tj.map[z]}</div>
+      <div class="tian">${r.tian[z]}</div>
+      <div class="di">${z}</div>
+    </div>`).join("")}</div>
+    <div class="hint" style="margin-top:10px">每格：天将 / 天盘神 / 地盘位。月将${r.jiang}加于时支${r.hourZhi}，天地盘即成。</div>`;
+}
+function renderPc(r){
+  $("#pc").innerHTML=`<div class="doc">
+    <h3>一、观三传生克脉络</h3>
+    初传为事之始（发用之门），中传为事之中，末传为事之终。三传六亲：官鬼主官非病患、妻财主财物、父母主文书长辈、子孙主解忧后福、兄弟主争夺破耗。传生干吉，传克干凶；递生（初生中、中生末）事顺，递克事阻。
+    <h3>二、观天将吉凶</h3>
+    贵人主贵助 · 螣蛇主惊恐怪异 · 朱雀主口舌文书 · 六合主婚姻和合 · 勾陈主争斗田土 · 青龙主财喜 · 天空主欺诈落空 · 白虎主凶丧疾病 · 太常主衣冠宴饮 · 玄武主盗贼暗昧 · 太阴主暗助妇人 · 天后主妇人恩泽。凶将临吉传减凶，吉将临凶传减吉。
+    <h3>三、取法门（本课：${r.men}）</h3>
+    贼克取受克之上神；两贼以上比用（与日干俱比）；俱比俱不比则涉害（本盘取孟仲季简法）；无贼克则遥克（上克日为蒿矢、日克上为弹射）；三课备为别责（阳取干合上神、阴取支三合前支，中末俱干上）；八专日（甲寅庚申丁未己未）阳顺三阴逆三；伏吟取刑；返吟有克取克、无克取冲。
+    <h3 class="mut" style="color:var(--muted)">四、说明</h3>
+    <span class="mut">涉害深浅法各派不同（本盘用孟仲季简法）；别责阴日"支三合前支"、八专阴阳取法、返吟无克中末亦有小异。课经浩繁（课体九百余），本页为学习框架。</span>
+  </div>`;
+}
+$("#pd").innerHTML=`<div class="doc">
+  <h3>一、月将加时</h3>
+  月将即太阳所在星次，以<b>中气</b>换将：雨水后亥（登明）、春分后戌（河魁）、谷雨后酉（从魁）、小满后申（传送）、夏至后未（小吉）、大暑后午（胜光）、处暑后巳（太乙）、秋分后辰（天罡）、霜降后卯（太冲）、小雪后寅（功曹）、冬至后丑（大吉）、大寒后子（神后）。将月将加于占时之位，转动天地盘。
+  <h3>二、四课</h3>
+  日干寄宫：甲寅 乙辰 丙戊巳 丁己未 庚申 辛戌 壬亥 癸丑。一课：干寄宫之天盘神；二课：一课上神之天盘神；三课：日支之天盘神；四课：三课上神之天盘神。
+  <h3>三、贵人起法</h3>
+  甲戊庚昼丑夜未，乙己昼子夜申，丙丁昼亥夜酉，辛昼午夜寅，壬癸昼卯夜巳。卯至申时用昼贵，酉至寅时用夜贵。贵人所临之地盘位在亥至辰则十二天将顺布，在巳至戌则逆布。
+  <h3>四、十二天将次序</h3>
+  贵人、螣蛇、朱雀、六合、勾陈、青龙、天空、白虎、太常、玄武、太阴、天后。
+  <h3>五、六亲</h3>
+  以日干寄宫之五行为我：同我兄弟、生我父母、我生子孙、克我官鬼、我克妻财。
+</div>`;
+</script>
+</body>
+</html>

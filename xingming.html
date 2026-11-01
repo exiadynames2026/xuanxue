@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>姓名学 · 三才五格</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>名</text></svg>">
+<link rel="stylesheet" href="common.css">
+<script src="nav.js"></script>
+<style>
+.wg-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}
+.wg{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:12px 6px;text-align:center}
+.wg .k{font-size:11px;color:var(--muted);letter-spacing:1px}
+.wg .n{font-size:24px;font-weight:700;margin:4px 0}
+.wg .s{font-size:11px}
+.ji{color:#9ec9a8}.banji{color:#d8c48a}.xiong{color:#e0a08d}
+.sc-box{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:12px 16px;font-size:13px;line-height:2;margin-bottom:12px}
+.sc-box b{color:var(--accent)}
+.char-row{display:flex;gap:8px;align-items:end;flex-wrap:wrap}
+.char-row .f{flex:1;min-width:90px}
+.manual{width:80px !important}
+</style>
+</head>
+<body>
+<header>
+  <div class="hrow">
+    <h1>姓名学<small>五格剖象 · 81数理 · 三才配置</small></h1>
+    <a class="gh" href="https://github.com/exiadynames2026/xuanxue" target="_blank">GitHub</a>
+  </div>
+  <nav></nav>
+</header>
+<div class="wrap">
+  <div>
+    <div class="card" style="margin-bottom:18px">
+      <h2>姓名输入（按康熙笔画）</h2>
+      <div class="err" id="errBox"></div>
+      <div class="field"><label>姓氏</label>
+        <div class="char-row"><div class="f"><input type="text" id="xing" value="李" maxlength="2" placeholder="姓"></div>
+        <input type="number" class="manual" id="xingN" placeholder="笔画" min="1" max="30" style="display:none"></div>
+        <div class="hint" id="xingHint"></div>
+      </div>
+      <div class="field"><label>名字第一字</label>
+        <div class="char-row"><div class="f"><input type="text" id="ming1" value="嘉" maxlength="1" placeholder="名1"></div>
+        <input type="number" class="manual" id="ming1N" placeholder="笔画" min="1" max="30" style="display:none"></div>
+        <div class="hint" id="ming1Hint"></div>
+      </div>
+      <div class="field"><label>名字第二字（单名可留空）</label>
+        <div class="char-row"><div class="f"><input type="text" id="ming2" value="懿" maxlength="1" placeholder="名2"></div>
+        <input type="number" class="manual" id="ming2N" placeholder="笔画" min="1" max="30" style="display:none"></div>
+        <div class="hint" id="ming2Hint"></div>
+      </div>
+      <button class="btn" id="btnGo">析 姓 名</button>
+    </div>
+    <div class="card">
+      <h2>五格剖象是什么</h2>
+      <div class="doc" style="font-size:12px;line-height:1.9;color:var(--muted)">
+        源自日本熊崎健翁"姓名学"（1930年代传入台湾），按<b>康熙字典笔画</b>计算天、人、地、外、总五格数理，配 81 数吉凶与天人地<b>三才</b>生克。华人圈流传极广。注意：日本起源、与八字无关，学界多视为文字游戏，本页按其通行规则实现。
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div id="result"><div class="empty">请输入姓名</div></div>
+  </div>
+</div>
+<footer></footer>
+<script>
+"use strict";
+XXNav.render("姓名学"); XXNav.footer();
+const $=s=>document.querySelector(s);
+// ===== 康熙笔画表（常用字；未收录字请手动输入笔画） =====
+const KX={
+"丁":2,"王":4,"李":7,"張":11,"刘":15,"陳":16,"杨":13,"楊":13,"黄":12,"黃":12,"赵":14,"趙":14,
+"吴":7,"吳":7,"周":8,"徐":10,"孙":10,"孫":10,"马":10,"馬":10,"朱":6,"胡":9,"郭":15,"何":7,
+"林":8,"高":10,"罗":20,"羅":20,"郑":19,"鄭":19,"梁":11,"谢":17,"謝":17,"宋":7,"唐":10,"韩":17,
+"韓":17,"冯":12,"馮":12,"于":3,"董":12,"程":13,"曹":11,"袁":10,"许":11,"許":11,"傅":12,"沈":8,
+"曾":12,"彭":13,"吕":7,"呂":7,"卢":16,"盧":16,"蒋":17,"蔣":17,"蔡":18,"贾":13,"賈":13,"丁":2,
+"魏":15,"薛":17,"叶":15,"葉":15,"余":7,"潘":16,"杜":7,"戴":18,"夏":10,"钟":17,"鍾":17,"汪":9,
+"田":5,"任":6,"姜":9,"范":15,"方":4,"石":5,"姚":9,"谭":19,"譚":19,"盛":12,"熊":14,"金":8,
+"陆":14,"陸":14,"孔":4,"白":5,"崔":11,"康":11,"秦":10,"江":7,"邓":19,"鄧":19,"苏":22,"蘇":22,
+"廖":14,"温":14,"溫":14,"洪":10,"纪":9,"紀":9,"卫":15,"衛":15,"邱":12,"尹":4,"易":8,"廖":14,
+"文":4,"武":8,"明":8,"志":7,"忠":8,"国":11,"國":11,"建":9,"华":14,"華":14,"伟":11,"偉":11,
+"敏":11,"静":16,"靜":16,"丽":19,"麗":19,"娟":10,"英":11,"芳":10,"平":5,"安":6,"和":8,"春":9,
+"秋":9,"冬":5,"宇":6,"宁":14,"寧":14,"嘉":14,"懿":22,"喜":12,"乐":15,"樂":15,"慧":15,"捷":12,
+"健":11,"康":11,"强":12,"強":12,"刚":10,"剛":10,"峰":10,"岳":8,"傑":12,"杰":12,"军":9,"軍":9,
+"浩":11,"涛":18,"濤":18,"润":16,"潤":16,"海":11,"洋":10,"鸿":17,"鴻":17,"云":12,"雲":12,"雨":8,
+"雪":11,"霜":17,"梅":11,"竹":6,"松":8,"柏":9,"桂":10,"森":12,"楠":13,"荣":14,"榮":14,"磊":15,
+"心":4,"思":9,"恩":10,"悦":11,"悅":11,"惠":12,"爱":13,"愛":13,"智":12,"晓":16,"曉":16,"旭":6,
+"昊":8,"晗":11,"婷":12,"娜":10,"婉":11,"妍":7,"如":6,"巧":5,"玉":5,"珍":10,"珠":11,"琳":13,
+"琦":13,"瑞":14,"瑜":14,"瑶":15,"瑤":15,"福":14,"禄":13,"祿":13,"寿":14,"壽":14,"富":12,
+"贵":12,"貴":12,"庆":15,"慶":15,"龙":16,"龍":16,"凤":14,"鳳":14,"鹏":19,"鵬":19,"飞":9,"飛":9,
+"香":9,"馨":20,"怡":9,"俊":9,"信":9,"佳":8,"伦":8,"倫":8,"天":4,"一":1,"子":3,"小":3,
+"少":4,"中":4,"正":5,"永":5,"立":5,"光":6,"全":6,"成":6,"百":6,"年":6,"生":5,"世":5,
+"可":5,"东":8,"東":8,"书":10,"書":10,"月":4,"日":4,"水":4,"火":4,"山":3,"川":3,"土":3,
+"金":8,"木":4,"清":12,"鸿":17,"长":8,"長":8,"远":17,"遠":17,"道":16,"德":15,"宏":7,"学":16,
+"學":16,"鹏":19,"承":8,"兆":6,"京":8,"亭":9,"亦":6,"以":5,"允":4,"元":4,"兮":4,"公":4,
+"六":4,"兮":4,"卉":5,"半":5,"功":5,"加":5,"右":5,"司":5,"弘":5,"本":5,"未":5,"且":5,
+"甲":5,"申":5,"白":5,"目":5,"幼":5,"必":5,"扎":4,"友":4,"反":4,"夫":4,"少":4,"尤":4,
+"予":4,"勿":4,"勾":4,"午":4,"厄":4,"卞":4,"元":4,"内":4,"凶":4,"切":4,"分":4,"刊":5,
+"卉":5,"戊":5,"平":5,"正":5,"玉":5,"瓜":5,"瓦":5,"甘":5,"田":5,"由":5,"甲":5,"申":5,
+"合":6,"吉":6,"同":6,"名":6,"后":6,"如":6,"宇":6,"守":6,"安":6,"屮":3,"己":3,"也":3,
+"于":3,"亡":3,"凡":3,"久":3,"夕":3,"大":3,"女":3,"子":3,"小":3,"山":3,"川":3,"寸":3,
+"才":3,"千":3,"乞":3,"也":3,"乙":1,"一":1,"人":2,"入":2,"八":2,"几":2,"刀":2,"力":2,
+"匕":2,"十":2,"卜":2,"又":2,"厂":2,"了":2,"乃":2,"九":2
+};
+// ===== 81数理吉凶 =====
+const JI81=new Set([1,3,5,6,7,8,11,13,15,16,17,18,21,23,24,25,29,31,32,33,35,37,39,41,45,47,48,52,57,61,63,65,67,68,81]);
+const BANJI81=new Set([27,30,38,42,49,51,71,73,75,77,78]);
+function shuJi(n){ n=((n-1)%80)+1; return JI81.has(n)?["吉","ji"]:BANJI81.has(n)?["半吉","banji"]:["凶","xiong"]; }
+function wxOf(n){ const m=((n-1)%10)+1; return m<=2?"木":m<=4?"火":m<=6?"土":m<=8?"金":"水"; }
+const WX_SHENG={"木":"水","火":"木","土":"火","金":"土","水":"金"};
+const WX_KE={"木":"土","土":"水","水":"火","火":"金","金":"木"};
+
+let useManual={xing:false,m1:false,m2:false};
+["xing","ming1","ming2"].forEach((id,i)=>{
+  const key=["xing","m1","m2"][i];
+  document.getElementById(id).addEventListener("input",()=>lookup(key,id,document.getElementById(id+"N"),document.getElementById(id+"Hint")));
+  document.getElementById(id+"N").addEventListener("input",()=>lookup(key,id,document.getElementById(id+"N"),document.getElementById(id+"Hint")));
+});
+function lookup(key,inputId,manualId,hintId){
+  const ch=document.getElementById(inputId).value.trim();
+  if(!ch){ useManual[key]=false; manualId.style.display="none"; hintId.textContent=""; return; }
+  const n=KX[ch];
+  if(n){ useManual[key]=false; manualId.style.display="none"; hintId.innerHTML=`「${ch}」康熙笔画：<b style="color:var(--accent)">${n}</b>`; }
+  else { useManual[key]=true; manualId.style.display=""; hintId.innerHTML=`「${ch}」不在字表内，请<b style="color:var(--red)">手动输入康熙笔画</b>（注意繁体/部首按康熙字典）`; }
+}
+$("#btnGo").addEventListener("click",()=>{
+  try{
+    const xing=$("#xing").value.trim(), m1=$("#ming1").value.trim(), m2=$("#ming2").value.trim();
+    if(!xing) throw new Error("请输入姓氏");
+    if(!m1) throw new Error("请至少输入名字一字");
+    // 逐字取画数（手动模式仅支持单姓；复姓需两字均在字表内）
+    const getN=(ch,key,manualId)=>{
+      if(useManual[key]){ const v=+manualId.value; if(!v||v<1||v>30) throw new Error(`「${ch}」请填写手动笔画（1-30）`); return v; }
+      const n=KX[ch]; if(!n) throw new Error(`「${ch}」不在字表内，请填手动笔画`); return n;
+    };
+    const xArr=[...xing], mArr=[m1, m2].filter(Boolean);
+    let xN;
+    if(xArr.length===1){
+      xN=[getN(xArr[0], "xing", $("#xingN"))];
+    } else {
+      const a=KX[xArr[0]], b=KX[xArr[1]];
+      if(!a || !b) throw new Error(`复姓「${xing}」两字均需在字表内（当前查到：${xArr.map(c=>KX[c]||"缺").join("、")}）；或拆为单姓处理`);
+      xN=[a,b];
+    }
+    const mN=mArr.map((c,i)=>getN(c, i===0?"m1":"m2", i===0?$("#ming1N"):$("#ming2N")));
+    // 五格
+    let tian, ren, di, wai, zong;
+    if(xArr.length===1){
+      tian=xN[0]+1;
+      ren=xN[0]+mN[0];
+      di=mN.length===2?mN[0]+mN[1]:mN[0]+1;
+      wai=mN.length===2?mN[1]+1:2;
+    } else {
+      tian=xN[0]+xN[1];
+      ren=xN[1]+mN[0];
+      di=mN.length===2?mN[0]+mN[1]:mN[0]+1;
+      wai=mN.length===2?xN[0]+mN[1]:xN[0]+1;
+    }
+    zong=xN.reduce((a,b)=>a+b,0)+mN.reduce((a,b)=>a+b,0);
+    render(xing+mArr.join(""),{tian,ren,di,wai,zong});
+  }catch(e){ const b=$("#errBox"); b.textContent=e.message; b.style.display="block"; setTimeout(()=>b.style.display="none",5000); }
+});
+function render(name,g){
+  const box=(k,n)=>{
+    const [ji,cls]=shuJi(n);
+    return `<div class="wg"><div class="k">${k}</div><div class="n ${cls}">${n}</div><div class="s ${cls}">${ji} · ${wxOf(n)}</div></div>`;
+  };
+  // 三才：天人地格末位五行
+  const st=[wxOf(g.tian),wxOf(g.ren),wxOf(g.di)];
+  const rel=(a,b)=> a===b?"比和吉":WX_SHENG[b]===a?"相生吉":WX_KE[a]===b?"克出平":WX_KE[b]===a?"克入凶":"—";
+  const scJudge=[rel(st[0],st[1]),rel(st[1],st[2])];
+  const scScore=(scJudge[0].includes("吉")?1:scJudge[0].includes("凶")?-1:0)+(scJudge[1].includes("吉")?1:scJudge[1].includes("凶")?-1:0);
+  const scVerdict=scScore>=1?"三才相生，基础运佳":scScore<=-1?"三才相克，基础运弱":"三才平顺";
+  $("#result").innerHTML=`
+    <div class="notice gold">姓名：<b>${name}</b> · 康熙笔画口径 · 五格剖象法</div>
+    <div class="wg-grid">
+      ${box("天格",g.tian)}${box("人格",g.ren)}${box("地格",g.di)}${box("外格",g.wai)}${box("总格",g.zong)}
+    </div>
+    <div class="sc-box"><b>三才配置</b>：天${g.tian}（${st[0]}）→ 人${g.ren}（${st[1]}）→ 地${g.di}（${st[2]}）<br>
+      天→人：${scJudge[0]} · 人→地：${scJudge[1]} —— <b>${scVerdict}</b><br>
+      <span style="color:var(--muted);font-size:12px">人格为姓名学核心（主运），地格主前运（36岁前），总格主后运。三才以相生比和为佳。</span></div>
+    <div class="sc-box"><b>数理详注（81数循环）</b><br>
+      ${Object.entries(g).map(([k,n])=>{const [ji]=shuJi(n);return `${k==="tian"?"天":k==="ren"?"人":k==="di"?"地":k==="wai"?"外":"总"}格 ${n}（${ji}）`;}).join(" · ")}</div>
+    <div class="hint">五格计算：天格=姓+1（复姓为两姓相加）；人格=姓末+名首（主运）；地格=名两字相加（单名+1）；外格=名末+1（单名取2）；总格=全名相加。三才生克仅按五行关系简断，熊崎氏原论另有125种配置详表。</div>`;
+}
+window.addEventListener("load",()=>$("#btnGo").click());
+</script>
+</body>
+</html>

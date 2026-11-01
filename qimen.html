@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>奇门遁甲 · 时家转盘</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>奇</text></svg>">
+<link rel="stylesheet" href="common.css">
+<script src="lunar.js"></script>
+<script src="qimen-core.js"></script>
+<script src="nav.js"></script>
+<style>
+.grid9{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:640px}
+.g9{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:10px;min-height:150px;position:relative;font-size:12.5px}
+.g9 .gname{position:absolute;top:8px;right:10px;color:var(--muted);font-size:11px}
+.g9 .god{color:var(--accent);font-size:12px;font-weight:600}
+.g9 .star{margin-top:4px}
+.g9 .star b{color:#e8d9a8}
+.g9 .men{margin-top:2px}
+.g9 .men b{color:var(--blue)}
+.g9 .dipan{margin-top:6px;color:var(--muted)}
+.g9 .yi-t{font-size:17px;font-weight:600;letter-spacing:2px}
+.g9 .qi{color:var(--red)}
+.g9 .tagline{position:absolute;bottom:6px;left:10px;font-size:10.5px;color:var(--muted)}
+.g9.center{background:#26231e;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-size:11.5px;line-height:1.8}
+.meta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.meta .n{background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:8px 13px;text-align:center}
+.meta .n b{display:block;font-size:16px;color:var(--accent)}
+.meta .n span{font-size:11px;color:var(--muted)}
+</style>
+</head>
+<body>
+<header>
+  <div class="hrow">
+    <h1>奇门遁甲<small>时家转盘 · 拆补定局</small></h1>
+    <a class="gh" href="https://github.com/exiadynames2026/xuanxue" target="_blank">GitHub</a>
+  </div>
+  <nav></nav>
+</header>
+<div class="wrap">
+  <div>
+    <div class="card" style="margin-bottom:18px">
+      <h2>起局</h2>
+      <div class="err" id="errBox"></div>
+      <div class="field"><label>公历日期时间（所用时辰）</label>
+        <div class="row">
+          <input type="number" id="inY" value="2026" min="1900" max="2100">
+          <input type="number" id="inM" value="11" min="1" max="12">
+          <input type="number" id="inD" value="2" min="1" max="31">
+          <input type="number" id="inH" value="12" min="0" max="23">
+        </div>
+      </div>
+      <div class="field"><label>所问何事（可选）</label><input type="text" id="inAsk" placeholder="例：求职面试" maxlength="30"></div>
+      <button class="btn" id="btnGo">排 局</button>
+    </div>
+    <div class="card">
+      <h2>奇门是什么</h2>
+      <div class="doc" style="font-size:12px;line-height:1.9;color:var(--muted)">
+        与太乙、六壬并称"三式"，为古代最高层次的预测学之一，号称"帝王之学"。以洛书九宫为骨架，布三奇（乙丙丁）六仪（戊己庚辛壬癸），配九星、八门、八神，视天时（星）地利（门）人和（神）以断趋避。本页为<b>时家转盘奇门</b>，拆补法定局。
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="tabs" id="tabs">
+      <button data-p="pa" class="on">局盘</button>
+      <button data-p="pb">断局指引</button>
+      <button data-p="pc">排局规则</button>
+    </div>
+    <div class="pane on" id="pa"><div class="empty">请先排局</div></div>
+    <div class="pane" id="pb"></div>
+    <div class="pane" id="pc"></div>
+  </div>
+</div>
+<footer></footer>
+<script>
+"use strict";
+XXNav.render("奇门遁甲"); XXNav.footer();
+const $=s=>document.querySelector(s);
+let R=null;
+$("#btnGo").addEventListener("click",()=>{
+  try{
+    R=QiMen.paipan(Solar.fromYmdHms(+$("#inY").value,+$("#inM").value,+$("#inD").value,+$("#inH").value,0,0));
+    renderPa(); renderPb();
+    $("#tabs").querySelectorAll("button")[0].click();
+  }catch(e){ const b=$("#errBox"); b.textContent=e.message; b.style.display="block"; setTimeout(()=>b.style.display="none",5000); }
+});
+function renderPa(){
+  const r=R;
+  // 九宫所含地支：坎1[子] 艮8[丑寅] 震3[卯] 巽4[辰巳] 离9[午] 坤2[未申] 兑7[酉] 乾6[戌亥]
+  const PALACE_ZHI={1:["子"],8:["丑","寅"],3:["卯"],4:["辰","巳"],9:["午"],2:["未","申"],7:["酉"],6:["戌","亥"]};
+  const cell=g=>{
+    if(g===5) return `<div class="g9 center">中五宫<br>天禽寄坤二<br><span style="color:var(--accent)">地盘 ${r.dipan[5]}</span></div>`;
+    const qi = "乙丙丁".includes(r.tianYi[g]) ? "qi" : "";
+    const yiT = r.tianYi[g] ? `<span class="yi-t ${qi}">${r.tianYi[g]}</span>` : "";
+    const marks=[ (r.kong.some(z=>PALACE_ZHI[g].includes(z))?'<span class="pill red">空</span>':""),
+                  (PALACE_ZHI[g].includes(r.maXing)?'<span class="pill gold">马</span>':"") ].join("");
+    return `<div class="g9">
+      <span class="gname">${g}${r.PALACE_NAME[g]}</span>
+      <div class="god">${r.tianShen[g]||"—"}</div>
+      <div class="star"><b>${r.tianXing[g]||"—"}</b> ${yiT}</div>
+      <div class="men"><b>${r.tianMen[g]||"—"}</b></div>
+      <div class="dipan">地盘 <b>${r.dipan[g]}</b></div>
+      <div class="tagline">${marks}</div>
+    </div>`;
+  };
+  $("#pa").innerHTML=`
+    <div class="meta">
+      <div class="n"><b>${r.dun>0?"阳遁":"阴遁"}${r.ju}局</b><span>${r.jieqi}·${["上元","中元","下元"][r.yuan]}·符头${r.futou}</span></div>
+      <div class="n"><b>${r.dayGz}</b><span>日干支</span></div>
+      <div class="n"><b>${r.timeGz}</b><span>时干支</span></div>
+      <div class="n"><b>${r.xunShou}</b><span>旬首·${r.xunYi}</span></div>
+      <div class="n"><b>${r.zhiFuXing}</b><span>值符星</span></div>
+      <div class="n"><b>${r.zhiShiMen}</b><span>值使门</span></div>
+      <div class="n"><b>${r.kong.join("")}</b><span>旬空</span></div>
+      <div class="n"><b>${r.maXing}</b><span>马星</span></div>
+    </div>
+    ${$("#inAsk").value?`<div class="notice">所问：${$("#inAsk").value}</div>`:""}
+    <div class="grid9">${cell(4)}${cell(9)}${cell(2)}${cell(3)}${cell(5)}${cell(7)}${cell(8)}${cell(1)}${cell(6)}</div>
+    <div class="hint" style="margin-top:12px">每宫自上而下：八神 / 九星+天盘三奇六仪 / 八门 / 地盘仪。〇标红者为三奇（乙丙丁），"空"为时辰旬空落宫，"马"为驿马动宫。</div>`;
+}
+function renderPb(){
+  const r=R;
+  // 用神速查
+  const ganGong=Object.keys(r.tianYi).find(g=>r.tianYi[g]===r.timeGz[0]);
+  const riGanGong=Object.keys(r.dipan).find(g=>r.dipan[g]===r.dayGz[0]);
+  $("#pb").innerHTML=`<div class="doc">
+    <h3>一、本局要点</h3>
+    时干 <b>${r.timeGz[0]}</b> 天盘落 <b>${ganGong?ganGong+"宫":"（旬首甲，看值符宫）"}</b>——时干为问事之人/当前状态；日干 <b>${r.dayGz[0]}</b> 地盘在 <b>${riGanGong}宫</b>——日干为求测人自身。
+    <h3>二、用神速查</h3>
+    求测人：日干 · 事件当前：时干 · 事业官职：值符/开门 · 财物：生门/戊（资本） · 婚姻感情：六合/乙庚 · 疾病：天芮星 · 行人走失：六合/驿马宫 · 文书：丁奇 · 暗昧不明：玄武宫。
+    <h3>三、吉凶格局速断</h3>
+    ① <b>门迫</b>：门克宫为迫，凶门迫更凶，吉门迫减吉（如惊门落震宫）；② <b>击刑</b>：六仪落刑宫（如戊落震、己落坤）主刑伤；③ <b>入墓</b>：三奇六仪落库宫（如乙落乾为墓）主暗昧难成；④ <b>空亡</b>：落宫信息落空，出空应事；⑤ <b>马星</b>：动象所在；⑥ 天显时格（甲己之日夜半甲子时）诸事大吉。
+    <h3>四、八门含义</h3>
+    休（贵人/公务/休养）生（财帛/生意/生机）伤（伤害/竞争/捕猎）杜（阻塞/隐藏/保密）景（文书/血光/虚华）死（凶灾/田宅/吊丧）惊（惊恐/口舌/官司）开（开张/远行/官贵）。
+    <h3>五、九星含义</h3>
+    蓬（贼盗/大胆）任（担当/倔强）冲（果决/冲突）辅（文教/仁德）英（才华/急躁）芮（疾病/学生）柱（口舌/破坏/守御）心（首领/心机/权谋）。
+    <h3 class="mut" style="color:var(--muted)">六、说明</h3>
+    <span class="mut">本页为转盘奇门拆补法。置闰法（茅山/超神接气）与飞盘法布盘结果不同；阳星阴神另有暗干、旬空入中等细节从略。仅供学习。</span>
+  </div>`;
+}
+$("#pc").innerHTML=`<div class="doc">
+  <h3>一、定局（拆补法）</h3>
+  以日辰所在<b>节气</b>（二十四节气）定阴阳遁与三元局数表：冬至~芒种阳遁，夏至~大雪阴遁。每节气分上中下三元，由<b>符头</b>（距日最近的甲/己日）地支定元：子午卯酉上元，寅申巳亥中元，辰戌丑未下元。
+  <h3>二、布地盘</h3>
+  三奇六仪序列：戊己庚辛壬癸丁丙乙。阳遁：戊落局数宫，依九宫序顺飞；阴遁逆飞。
+  <h3>三、定值符值使</h3>
+  时辰所在旬首（甲子戊/甲戌己/甲申庚/甲午辛/甲辰壬/甲寅癸），旬首仪所落地盘宫：宫之九星为值符星，宫之八门为值使门。中五宫天禽寄坤二。
+  <h3>四、转盘</h3>
+  值符星随时干落宫（甲以旬首仪代），九星按环序 1坎→8艮→3震→4巽→9离→2坤→7兑→6乾 随转，各星携原地盘仪为天盘；值使门自旬首宫起按时辰数飞宫（阳顺阴逆），八门随转；八神自值符宫起，阳遁顺阴遁逆布：值符腾蛇太阴六合白虎玄武九地九天。
+  <h3>五、辅助要素</h3>
+  时辰旬空（甲子旬戌亥空等六旬），时支驿马（申子辰马在寅…）。
+</div>`;
+</script>
+</body>
+</html>

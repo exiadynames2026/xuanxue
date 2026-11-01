@@ -1,8 +1,21 @@
-# 八字排盘 & 铁板神数 · 四柱命理工具
+# 玄学工具箱 · 八字 / 铁板神数 / 六爻 / 奇门 / 六壬 / 紫微 / 梅花 / 黄历 / 姓名学 / 称骨
 
-纯前端、零依赖部署的八字（四柱命理）与铁板神数推演工具。
+纯前端、零依赖部署的十合一中国传统玄学工具箱。
 
-![功能预览](https://img.shields.io/badge/%E5%85%AB%E5%AD%97-%E5%9B%9B%E6%9F%B1%E6%8E%92%E7%9B%98-a4443a) ![铁板](https://img.shields.io/badge/%E9%93%81%E6%9D%BF%E7%A5%9E%E6%95%B0-%E6%B2%B3%E6%B4%9B%E8%80%83%E5%88%BB-c9a227) ![测试](https://img.shields.io/badge/%E9%AA%8C%E8%AF%81-74%E9%A1%B9%E5%85%A8%E9%83%A8%E9%80%9A%E8%BF%87-2e8b57)
+![工具](https://img.shields.io/badge/%E5%B7%A5%E5%85%B7-10%E4%B8%AA-c9a227) ![测试](https://img.shields.io/badge/%E9%AA%8C%E8%AF%81-192%E9%A1%B9%E5%85%A8%E9%83%A8%E9%80%9A%E8%BF%87-2e8b57)
+
+| 工具 | 页面 | 内容 |
+|---|---|---|
+| 八字排盘 | [index.html](index.html) | 四柱十神藏干纳音、大运流年、真太阳时、20 神煞、身强弱 |
+| 铁板神数 | [tieban.html](tieban.html) | 河洛起卦、考时定刻、条文断、大限流年 |
+| 六爻排卦 | [liuyao.html](liuyao.html) | 京房纳甲装卦、六亲六兽世应、摇卦、用神指引 |
+| 奇门遁甲 | [qimen.html](qimen.html) | 时家转盘拆补定局、九星八门八神、九宫格排盘 |
+| 大六壬 | [liuren.html](liuren.html) | 月将加时、四课三传九宗门、十二天将 |
+| 紫微斗数 | [ziwei.html](ziwei.html) | 全盘安星（14 主星 + 辅煞 + 四化）、十二宫、大限 |
+| 梅花易数 | [meihua.html](meihua.html) | 时间/数字起卦、体用互变、万物类象 |
+| 黄历择日 | [huangli.html](huangli.html) | 每日宜忌、吉凶神、冲煞、建除、喜财神方位 |
+| 姓名学 | [xingming.html](xingming.html) | 五格剖象、81 数理、三才配置（康熙笔画） |
+| 称骨 | [chengu.html](chengu.html) | 袁天罡称骨歌全套骨重表与批诗 |
 
 ## 工具一：八字排盘（[index.html](index.html)）
 
@@ -31,6 +44,11 @@
 ```bash
 node test/verify.js         # 八字排盘 37 项
 node test/tieban-verify.js  # 铁板神数 37 项
+node test/liuyao-verify.js  # 六爻 25 项
+node test/qimen-verify.js   # 奇门 15 项
+node test/meihua-verify.js  # 梅花 19 项
+node test/ziwei-verify.js   # 紫微 35 项
+node test/liuren-verify.js  # 大六壬 24 项
 ```
 
 ### 准确性验证
@@ -65,14 +83,27 @@ node test/tieban-verify.js  # 铁板神数 37 项
 ## 项目结构
 
 ```
-├── index.html          # 八字排盘应用（界面 + 算法）
+├── index.html          # 八字排盘
+├── tieban.html         # 铁板神数
+├── liuyao.html         # 六爻排卦
+├── qimen.html          # 奇门遁甲
+├── liuren.html         # 大六壬
+├── ziwei.html          # 紫微斗数
+├── meihua.html         # 梅花易数
+├── huangli.html        # 黄历择日
+├── xingming.html       # 姓名学
+├── chengu.html         # 称骨
+├── common.css          # 共享主题样式
+├── nav.js              # 共享导航
 ├── lunar.js            # lunar-javascript 历法内核（MIT License）
-├── tieban.html         # 铁板神数 · 河洛考刻断
-├── tieban-core.js      # 铁板核心算法（河洛起卦/卦变/取数，浏览器与 Node 双端通用）
+├── tieban-core.js      # 铁板核心算法（河洛起卦/卦变/取数）
 ├── tieban-tiaowen.js   # 铁板示例条文库 + 六十四卦断语 + 太玄数/卦名/卦序表
-└── test/
-    ├── verify.js        # 八字排盘 37 项准确性验证
-    └── tieban-verify.js # 铁板神数 37 项验证（含手算对轴）
+├── liuyao-core.js      # 六爻纳甲装卦（八宫程序化生成）
+├── qimen-core.js       # 奇门排局（拆补定局/转盘）
+├── meihua-core.js      # 梅花起卦与体用
+├── ziwei-core.js       # 紫微安星全套
+├── liuren-core.js      # 大六壬四课三传
+└── test/               # 7 套自动化验证（共 201 项断言）
 ```
 
 ## 技术说明

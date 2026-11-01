@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>称骨算命 · 袁天罡称骨歌</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>骨</text></svg>">
+<link rel="stylesheet" href="common.css">
+<script src="lunar.js"></script>
+<script src="nav.js"></script>
+<style>
+.cg-total{display:flex;align-items:center;gap:16px;margin-bottom:14px;flex-wrap:wrap}
+.cg-weight{font-size:34px;color:var(--accent);font-weight:700;letter-spacing:2px}
+.cg-poem{background:linear-gradient(135deg,rgba(201,162,39,.08),rgba(181,83,60,.05));border:1px solid var(--accent2);border-radius:10px;padding:16px 20px;font-size:15px;line-height:2;letter-spacing:1px;margin-bottom:14px}
+.cg-poem .t{text-align:center;color:var(--accent);font-weight:600;margin-bottom:6px}
+.cg-detail{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.cg-detail .d{background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-size:13px}
+.cg-detail .d b{color:var(--accent)}
+.check{display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer;margin-top:6px}
+.check input{accent-color:var(--accent);width:15px;height:15px}
+</style>
+</head>
+<body>
+<header>
+  <div class="hrow">
+    <h1>称骨算命<small>袁天罡称骨歌 · 年月日时合称</small></h1>
+    <a class="gh" href="https://github.com/exiadynames2026/xuanxue" target="_blank">GitHub</a>
+  </div>
+  <nav></nav>
+</header>
+<div class="wrap">
+  <div>
+    <div class="card" style="margin-bottom:18px">
+      <h2>出生信息（农历口径）</h2>
+      <div class="field"><label>公历出生日期与时间</label>
+        <div class="row">
+          <input type="number" id="inY" value="1990" min="1900" max="2100">
+          <input type="number" id="inM" value="5" min="1" max="12">
+          <input type="number" id="inD" value="28" min="1" max="31">
+          <select id="inH"></select>
+        </div>
+      </div>
+      <label class="check"><input type="checkbox" id="inLateZi"> 23点后算次日（晚子时按次日计，流派选项）</label>
+      <button class="btn" id="btnGo" style="margin-top:10px">称 骨</button>
+    </div>
+    <div class="card">
+      <h2>称骨是什么</h2>
+      <div class="doc" style="font-size:12px;line-height:1.9;color:var(--muted)">
+        托名唐代袁天罡的民间速断法：以出生<b>农历</b>年、月、日、时各查得一个骨重（几两几钱），四者相加得总骨重，对照《称骨歌》批诗断一生福禄。算法简陋但流传极广。本页年月日时骨重表采自通行刊本，批诗为传统《称骨歌》原文。
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div id="result"><div class="empty">请输入出生时间</div></div>
+  </div>
+</div>
+<footer></footer>
+<script>
+"use strict";
+XXNav.render("称骨"); XXNav.footer();
+const $=s=>document.querySelector(s);
+const ZHI=["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
+const SHICHEN=["子时","丑时","寅时","卯时","辰时","巳时","午时","未时","申时","酉时","戌时","亥时"];
+// ===== 袁天罡称骨骨重表（单位：钱；通行刊本） =====
+const YEAR_W={ "甲子":12,"乙丑":9,"丙寅":6,"丁卯":7,"戊辰":12,"己巳":5,"庚午":9,"辛未":8,"壬申":7,"癸酉":8,
+"甲戌":15,"乙亥":9,"丙子":16,"丁丑":8,"戊寅":8,"己卯":19,"庚辰":12,"辛巳":6,"壬午":8,"癸未":7,
+"甲申":5,"乙酉":15,"丙戌":6,"丁亥":16,"戊子":15,"己丑":7,"庚寅":9,"辛卯":12,"壬辰":10,"癸巳":7,
+"甲午":15,"乙未":6,"丙申":5,"丁酉":14,"戊戌":14,"己亥":9,"庚子":7,"辛丑":7,"壬寅":9,"癸卯":12,
+"甲辰":8,"乙巳":7,"丙午":13,"丁未":5,"戊申":14,"己酉":5,"庚戌":9,"辛亥":17,"壬子":5,"癸丑":7,
+"甲寅":12,"乙卯":8,"丙辰":8,"丁巳":6,"戊午":19,"己未":6,"庚申":8,"辛酉":16,"壬戌":10,"癸亥":6 };
+const MONTH_W=[6,7,18,9,5,16,9,15,18,8,9,5];
+const DAY_W=[5,10,8,15,16,15,8,16,8,16,9,17,8,17,10,8,9,18,5,15,10,9,8,9,15,18,7,8,16,6];
+const HOUR_W=[16,6,7,10,9,16,10,8,8,9,6,6];
+// ===== 称骨歌批诗（骨重：钱 → 批语） =====
+const GE={
+21:"短命非业谓大空，平生灾难事重重；凶祸频临陷逆境，终世困苦事不成。",
+22:"身寒骨冷苦伶仃，此命推来行乞人；劳劳碌碌无度日，终年打拱过平生。",
+23:"此命推来骨格轻，求谋作事事难成；妻儿兄弟应难许，别处他乡作散人。",
+24:"此命推来福禄无，门庭困苦总难荣；六亲骨肉皆无靠，流浪他乡作老翁。",
+25:"此命推来祖业微，门庭营度似稀奇；六亲骨肉如冰炭，一世勤劳自把持。",
+26:"平生衣禄苦中求，独自营谋事不休；离祖出门宜早计，晚来衣禄自无休。",
+27:"一生作事少商量，难靠祖宗作主张；独马单枪空做去，早年晚岁总无长。",
+28:"一生行事似飘蓬，祖宗产业在梦中；若不过房改名姓，也当移徒二三通。",
+29:"初年运限未曾亨，纵有功名在后成；须过四旬才可立，移居改姓始为良。",
+30:"劳劳碌碌苦中求，东奔西走何日休；若使终身勤与俭，老来稍可免忧愁。",
+31:"忙忙碌碌苦中求，何日云开见日头；难得祖基家可立，中年衣食渐无忧。",
+32:"初年运蹇事难谋，渐有财源如水流；到得中年衣食旺，那时名利一齐收。",
+33:"早年做事事难成，百年勤劳枉费心；半世自如流水去，后来运到始得金。",
+34:"此命福气果如何，僧道门中衣禄多；离祖出家方为妙，朝晚拜佛念弥陀。",
+35:"生平福量不周全，祖业根基觉少传；营事生涯宜守旧，时来衣食胜从前。",
+36:"不须劳碌过平生，独自成家福不轻；早有福星常照命，任君行去百般成。",
+37:"此命般般事不成，弟兄少力自孤行；虽然祖业须微有，来得明时去不明。",
+38:"一身骨肉最清高，早入簧门姓氏标；待到年将三十六，蓝衫脱去换红袍。",
+39:"此命终身运不通，劳劳作事尽皆空；苦心竭力成家计，到得那时在梦中。",
+40:"平生衣禄是绵长，件件心中自主张；前面风霜多受过，后来必定享安康。",
+41:"此命推来自不同，为人能干异凡庸；中年还有逍遥福，不比前番运是通。",
+42:"得宽怀处且宽怀，何用双眉皱不开；若使中年命运济，那时名利一起来。",
+43:"为人心性最聪明，作事轩昂近贵人；衣禄一生天注定，不须劳碌是丰亨。",
+44:"万事由天莫苦求，须知福碌赖人修；当年财帛难如意，晚景欣然便不优。",
+45:"名利推求竟若何？前番辛苦后奔波；命中难养男和女，骨肉扶持也不多。",
+46:"东西南北尽皆通，出姓移居更觉隆；衣禄无穷无数定，中年晚景一般同。",
+47:"此命推求旺末年，妻荣子贵自怡然；平生原有滔滔福，可有财源如水流。",
+48:"初年运道未曾通，几许蹉跎命亦穷；兄弟六亲无依靠，一生事业晚来整。",
+49:"此命推来福不轻，自成自立显门庭；从来富贵人钦敬，使婢差奴过一生。",
+50:"为利为名终日劳，中年福禄也多遭；老来自有财星照，不比前番目下高。",
+51:"一世荣华事事通，不须劳碌自亨通；兄弟叔侄皆如意，家业成时福禄宏。",
+52:"一世亨通事事能，不须劳苦自然宁；宗族有光欣喜甚，家产丰盈自称心。",
+53:"此格推来福泽宏，兴家立业在其中；一生衣食安排定，却是人间一福翁。",
+54:"此格详采福泽宏，诗书满腹看功成；丰衣足食多安稳，正是人间有福人。",
+55:"策马扬鞭争名利，少年作事费筹论；一朝福禄源源至，富贵荣华显六亲。",
+56:"此格推来礼义通，一身福禄用无穷；甜酸苦辣皆尝过，滚滚财源盈而丰。",
+57:"福禄丰盈万事全，一身荣耀乐天年；名扬威震人争羡，此世逍遥宛似仙。",
+58:"平生衣食自然来，名利双全富贵偕；金榜题名登甲第，紫袍玉带走金阶。",
+59:"细推此格秀而清，必定才高学业成；甲第之中应有分，扬鞭走马显威荣。",
+60:"一朝金榜快题名，显祖荣宗大器成；衣禄定然无欠缺，田园财帛更丰盈。",
+61:"不作朝中金榜客，定为世上大财翁；聪明天付经书熟，名显高褂自是荣。",
+62:"此命生来福不穷，读书必定显亲宗；紫衣玉带为卿相，富贵荣华孰与同。",
+63:"命主为官福禄长，得来富贵实非常；名题雁塔传金榜，大显门庭天下扬。",
+64:"此格威权不可当，紫袍金带尘高堂；荣华富贵谁能及？万古留名姓氏扬。",
+65:"细推此命福非轻，富贵荣华孰与争；定国安邦人极品，威声显赫震寰瀛。",
+66:"此格人间一福人，堆金积玉满堂春；从来富贵有天定，金榜题名更显亲。",
+67:"此命生来福自宏，田园家业最高隆；平生衣禄盈丰足，一路荣华万事通。",
+68:"富贵由天莫苦求，万事家计不须谋；十年不比前番事，祖业根基千古留。",
+69:"君是人间福禄星，一生富贵众人钦；总然衣禄由天定，安享荣华过一生。",
+70:"此命推来福不轻，何须愁虑苦劳心；荣华富贵已天定，正笏垂绅拜紫宸。",
+71:"此命生成大不同，公侯卿相在其中；一生自有逍遥福，富贵荣华极品隆。"
+};
+function liang(q){ return q>=10 ? (Math.floor(q/10)+"两"+(q%10?q%10+"钱":"")) : q+"钱"; }
+(function(){ const s=$("#inH"); ZHI.forEach((z,i)=>{const o=document.createElement("option");o.value=i;o.textContent=SHICHEN[i];s.appendChild(o);}); s.value=6; })();
+$("#btnGo").addEventListener("click",()=>{
+  try{
+    let solar=Solar.fromYmdHms(+$("#inY").value,+$("#inM").value,+$("#inD").value,+$("#inH").value,0,0);
+    if($("#inLateZi").checked && +$("#inH").value>=23) solar=solar.nextDay(1);
+    const lunar=solar.getLunar();
+    const yGz=lunar.getYearInGanZhiExact();
+    const m=Math.abs(lunar.getMonth()), d=lunar.getDay();
+    const h=Math.floor(((+$("#inH").value+1)%24)/2);
+    const yw=YEAR_W[yGz], mw=MONTH_W[m-1], dw=DAY_W[d-1], hw=HOUR_W[h];
+    const total=yw+mw+dw+hw;
+    const ge=GE[total] || "骨重超出歌诀范围（罕见），请核对输入。";
+    $("#result").innerHTML=`
+      <div class="cg-total">
+        <span class="cg-weight">${liang(total)}</span>
+        <span style="color:var(--muted);font-size:13px">总骨重（${yGz}年 农历${m}月${lunar.getDayInChinese()} ${SHICHEN[h]}）</span>
+      </div>
+      <div class="cg-poem"><div class="t">《称骨歌》批</div>${ge}</div>
+      <div class="cg-detail">
+        <div class="d">年骨 <b>${liang(yw)}</b>（${yGz}）</div>
+        <div class="d">月骨 <b>${liang(mw)}</b>（农历${m}月）</div>
+        <div class="d">日骨 <b>${liang(dw)}</b>（农历${d}日）</div>
+        <div class="d">时骨 <b>${liang(hw)}</b>（${SHICHEN[h]}）</div>
+      </div>
+      <div class="hint" style="margin-top:12px">骨重相加 = ${yw}+${mw}+${dw}+${hw} = ${total}钱。称骨为概略民俗算法，同骨重者众，仅供娱乐。</div>`;
+  }catch(e){ $("#result").innerHTML=`<div class="err" style="display:block">${e.message}</div>`; }
+});
+window.addEventListener("load",()=>$("#btnGo").click());
+</script>
+</body>
+</html>

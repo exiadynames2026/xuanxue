@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>六爻排卦 · 纳甲装卦</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>卜</text></svg>">
+<link rel="stylesheet" href="common.css">
+<script src="lunar.js"></script>
+<script src="tieban-tiaowen.js"></script>
+<script src="liuyao-core.js"></script>
+<script src="nav.js"></script>
+<style>
+.ly-grid{display:flex;gap:16px;flex-wrap:wrap}
+.ly-col{flex:1;min-width:260px}
+.ly-row{display:grid;grid-template-columns:52px 1fr 40px 88px;gap:6px;align-items:center;padding:9px 4px;border-bottom:1px dashed var(--line);font-size:14px}
+.ly-row .shou{color:var(--blue);font-size:12.5px}
+.ly-row .yao{font-weight:600;letter-spacing:1px}
+.ly-row .mark{font-size:11px;color:var(--muted)}
+.ly-row .mark .kong{color:var(--red)}
+.ly-row .mark .jian{color:var(--accent)}
+.ly-row .bian{color:#d8b96a;font-size:12.5px}
+.ly-row .shiying{font-size:12px;color:var(--accent);font-weight:600}
+.gua-title{font-size:16px;color:var(--accent);font-weight:600;margin-bottom:8px;letter-spacing:2px}
+.gua-title small{color:var(--muted);font-weight:400;letter-spacing:0}
+.coin{font-size:26px;text-align:center;letter-spacing:8px;min-height:44px;line-height:44px}
+.toss-row{display:flex;gap:6px;align-items:center;margin:4px 0;font-size:13px}
+.toss-row .c{width:30px;height:30px;border-radius:50%;background:#3a352c;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:12px}
+.toss-row .c.yang{background:var(--accent);color:#191815;font-weight:700}
+</style>
+</head>
+<body>
+<header>
+  <div class="hrow">
+    <h1>六爻排卦<small>火珠林纳甲 · 装卦断事</small></h1>
+    <a class="gh" href="https://github.com/exiadynames2026/xuanxue" target="_blank">GitHub</a>
+  </div>
+  <nav></nav>
+</header>
+
+<div class="wrap">
+  <div>
+    <div class="card" style="margin-bottom:18px">
+      <h2>起卦</h2>
+      <div class="err" id="errBox"></div>
+      <div class="field">
+        <label>所占何事（用于提示用神）</label>
+        <select id="inMatter">
+          <option value="事业">事业 / 功名（用神：官鬼）</option>
+          <option value="求财">求财 / 生意（用神：妻财）</option>
+          <option value="婚姻男">婚姻（男测女：妻财）</option>
+          <option value="婚姻女">婚姻（女测男：官鬼）</option>
+          <option value="考试">考试 / 文书 / 合同（用神：父母）</option>
+          <option value="疾病">疾病 / 身体（用神：官鬼为病）</option>
+          <option value="子女">子女 / 晚辈（用神：子孙）</option>
+          <option value="兄弟">兄弟 / 朋友（用神：兄弟）</option>
+          <option value="官司">官司 / 口舌（用神：官鬼）</option>
+          <option value="出行">出行 / 寻人（用神：父母为行李）</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>起卦方式</label>
+        <div class="seg" id="segMode">
+          <button data-v="toss" class="on">摇铜钱</button>
+          <button data-v="auto">一键随机</button>
+          <button data-v="manual">手选卦</button>
+        </div>
+      </div>
+      <div id="tossPanel">
+        <div class="field"><label>逐爻摇卦（自初爻起，共六次）</label>
+          <div class="coin" id="coinShow">铜钱三枚 · 背为阳</div>
+          <button class="btn ghost" id="btnToss" style="margin-top:8px">🪙 摇 一 次</button>
+          <div class="hint" id="tossHint">已摇 0/6 爻</div>
+          <div id="tossList"></div>
+        </div>
+      </div>
+      <div id="manualPanel" style="display:none">
+        <div class="field"><label>上卦（外卦）</label><select id="selUpper"></select></div>
+        <div class="field"><label>下卦（内卦）</label><select id="selLower"></select></div>
+        <div class="field"><label>动爻（可多选，无则静卦）</label>
+          <div id="dongWrap" style="display:flex;gap:6px;flex-wrap:wrap">
+            <label class="check" style="margin:0"><input type="checkbox" value="1">初</label>
+            <label class="check" style="margin:0"><input type="checkbox" value="2">二</label>
+            <label class="check" style="margin:0"><input type="checkbox" value="3">三</label>
+            <label class="check" style="margin:0"><input type="checkbox" value="4">四</label>
+            <label class="check" style="margin:0"><input type="checkbox" value="5">五</label>
+            <label class="check" style="margin:0"><input type="checkbox" value="6">上</label>
+          </div>
+        </div>
+      </div>
+      <div class="field"><label>起卦日期时间（排日辰月建）</label>
+        <div class="row">
+          <input type="number" id="inY" value="2026" min="1900" max="2100">
+          <input type="number" id="inM" value="11" min="1" max="12">
+          <input type="number" id="inD" value="2" min="1" max="31">
+          <input type="number" id="inH" value="12" min="0" max="23">
+        </div>
+      </div>
+      <button class="btn" id="btnGo">装 卦 断 事</button>
+    </div>
+    <div class="card">
+      <h2>六爻是什么</h2>
+      <div class="doc" style="font-size:12px;line-height:1.9;color:var(--muted)">
+        又称火珠林法、文王课，汉京房创纳甲筮法：三枚铜钱摇六次成卦，装地支、配六亲、起六兽、定世应，以用神强弱与日月生克断吉凶。与梅花易数同源异流——梅花重卦象体用，六爻重爻位生克。本页按《卜筮正宗》《增删卜易》通行口径装卦。
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="tabs" id="tabs">
+      <button data-p="pa" class="on">卦象</button>
+      <button data-p="pb">断卦指引</button>
+      <button data-p="pc">装卦规则</button>
+    </div>
+    <div class="pane on" id="pa"><div class="empty">先在左侧起卦</div></div>
+    <div class="pane" id="pb"></div>
+    <div class="pane" id="pc"></div>
+  </div>
+</div>
+<footer></footer>
+<script>
+"use strict";
+XXNav.render("六爻排卦"); XXNav.footer();
+const $ = s => document.querySelector(s);
+const GAN=["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"], ZHI=["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
+const SHICHEN_NAME=["子时","丑时","寅时","卯时","辰时","巳时","午时","未时","申时","酉时","戌时","亥时"];
+const WX_COLOR={"金":"#c9a227","木":"#4e8b5a","水":"#5b84a8","火":"#b5533c","土":"#9a7b32"};
+const WX_SHENG={"木":"水","火":"木","土":"火","金":"土","水":"金"};
+const WX_KE={"木":"土","土":"水","水":"火","火":"金","金":"木"};
+let mode="toss", tosses=[], names8={1:"乾",2:"兑",3:"离",4:"震",5:"巽",6:"坎",7:"艮",8:"坤"};
+
+// 方式切换
+$("#segMode").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
+  $("#segMode").querySelectorAll("button").forEach(x=>x.classList.remove("on")); b.classList.add("on");
+  mode=b.dataset.v;
+  $("#tossPanel").style.display=mode==="toss"?"":"none";
+  $("#manualPanel").style.display=mode==="manual"?"":"none";
+}));
+(function(){
+  const su=$("#selUpper"), sl=$("#selLower");
+  [su,sl].forEach(sel=>{ for(const n of [1,2,3,4,5,6,7,8]){ const o=document.createElement("option"); o.value=n; o.textContent=names8[n]+"（"+({1:"☰",2:"☱",3:"☲",4:"☳",5:"☴",6:"☵",7:"☶",8:"☷"})[n]+"）"; sel.appendChild(o);} });
+  su.value=1; sl.value=1;
+})();
+function showError(m){const e=$("#errBox");e.textContent=m;e.style.display="block";setTimeout(()=>e.style.display="none",5000);}
+
+// 摇卦
+$("#btnToss").addEventListener("click",()=>{
+  if(tosses.length>=6) return;
+  const backs=[0,0,0].map(()=>Math.random()<0.5?1:0).reduce((a,b)=>a+b,0);
+  const y=LiuYao.coinToYao(backs);
+  tosses.push(y);
+  $("#coinShow").innerHTML = [0,1,2].map(i=>`<span class="pill ${i<backs?"gold":""}">${i<backs?"背":"字"}</span>`).join(" ");
+  const label={6:"老阴 ✕",7:"少阳 ━",8:"少阴 ━ ━",9:"老阳 ○"}[y];
+  $("#tossList").insertAdjacentHTML("beforeend",`<div class="toss-row"><span>第${tosses.length}爻</span><span class="c ${y===7||y===9?"yang":""}">${label}</span></div>`);
+  $("#tossHint").textContent=`已摇 ${tosses.length}/6 爻`+(tosses.length>=6?"，可装卦":"");
+});
+
+function currentGua(){
+  let r;
+  if(mode==="toss"){
+    if(tosses.length!==6){ showError("请先摇满六爻"); return null; }
+    r=LiuYao.fromTosses(tosses);
+  } else if(mode==="auto"){
+    const t=[0,0,0,0,0,0].map(()=>6+Math.floor(Math.random()*4));
+    r=LiuYao.fromTosses(t);
+  } else {
+    const up=+$("#selUpper").value, low=+$("#selLower").value;
+    const lines=[...TRIGRAM[low].lines,...TRIGRAM[up].lines];
+    const dong=[...$("#dongWrap").querySelectorAll("input:checked")].map(i=>+i.value);
+    const bianLines=lines.map((v,i)=>dong.includes(i+1)?1-v:v);
+    const b=LiuYao.trigramsOf(lines), m=LiuYao.trigramsOf(bianLines);
+    r={lines,moving:dong.map(x=>x-1),
+       ben:{upper:up,lower:low,name:HEXA[up][low]},
+       bian:{upper:m.upper,lower:m.lower,name:(dong.length?HEXA[m.upper][m.lower]:null),lines:bianLines}};
+  }
+  return r;
+}
+
+$("#btnGo").addEventListener("click",()=>{
+  const g=currentGua(); if(!g) return;
+  const solar=Solar.fromYmdHms(+$("#inY").value,+$("#inM").value,+$("#inD").value,+$("#inH").value,0,0);
+  const lunar=solar.getLunar();
+  const dayGz=lunar.getDayInGanZhi(), monthZhi=lunar.getMonthZhiExact();
+  let result;
+  try{ result=LiuYao.zhuangGua(g.ben.name, g.bian.name, dayGz, monthZhi); }
+  catch(e){ showError(e.message); return; }
+  renderPa(g,result,lunar,dayGz,monthZhi,solar);
+  renderPb(result,$("#inMatter").value);
+  $("#tabs").querySelectorAll("button")[0].click();
+});
+
+function yaoBar(v){ return `<div style="height:9px;border-radius:2px;background:linear-gradient(180deg,#e8d9a8,#c9a227);${v? "":"clip-path:polygon(0 0,42% 0,42% 100%,0 100%,58% 100%,58% 0,100% 0,100% 100%,42% 100%)"}"></div>`; }
+
+function renderPa(g,res,lunar,dayGz,monthZhi,solar){
+  const rowsDesc=[...res.rows].reverse(); // 上爻在上显示
+  const html=`
+    <div class="notice gold">占：<b>${$("#inMatter").selectedOptions[0].text}</b> · ${solar.toYmd()} ${SHICHEN_NAME[Math.floor(((+$("#inH").value+1)%24)/2)]} · 日辰 <b>${dayGz}</b> · 月建 <b>${monthZhi}</b> · 旬空 <b>${res.kong.join("")}</b></div>
+    <div class="ly-grid">
+      <div class="ly-col"><div class="gua-title">本卦 · ${g.ben.name}<small>（${res.palace.name}宫${res.palace.wx} · ${res.info.tag}）</small></div>
+        ${rowsDesc.map(r=>`<div class="ly-row">
+          <span class="shou">${r.shou}</span>
+          <span class="yao"><span style="color:${WX_COLOR[r.wx]}">${r.liuQin} ${r.ganZhi}</span><span style="display:block;margin-top:4px">${yaoBar(TRIGRAM_lineAt(g,r.pos))}</span></span>
+          <span class="shiying">${r.shi?"世":r.ying?"应":""}</span>
+          <span class="mark">${r.kong?'<span class="kong">旬空</span> ':''}${r.monthJian?'<span class="jian">月建</span> ':''}${r.dayChen?'<span class="jian">日辰</span>':''}${r.moving?`<span style="color:var(--red)"> ${r.moving}</span>`:""}</span>
+        </div>`).join("")}
+      </div>
+      <div class="ly-col"><div class="gua-title">变卦 · ${g.bian.name||"（静卦）"}</div>
+        ${rowsDesc.map(r=>`<div class="ly-row" style="grid-template-columns:52px 1fr">
+          <span class="shou">${r.shou}</span>
+          <span class="yao">${r.bianGanZhi?`<span style="color:#d8b96a">${r.bianGanZhi}</span>`:`<span style="color:var(--muted)">— 不动 —</span>`}</span>
+        </div>`).join("")}
+        <div class="hint" style="margin-top:8px">变卦纳甲随变卦本位取，六亲仍以本卦宫论。</div>
+      </div>
+    </div>`;
+  $("#pa").innerHTML=html;
+}
+// 取第 pos 爻（1-6）的阴阳，用于画爻条
+function TRIGRAM_lineAt(g,pos){ return g.lines[pos-1]; }
+
+function renderPb(res,matter){
+  const useMap={"事业":"官鬼","求财":"妻财","婚姻男":"妻财","婚姻女":"官鬼","考试":"父母","疾病":"官鬼","子女":"子孙","兄弟":"兄弟","官司":"官鬼","出行":"父母"};
+  const use=useMap[matter]||"官鬼";
+  const useRows=res.rows.filter(r=>r.liuQin===use);
+  const has=useRows.length>0;
+  const yongInfo=has?useRows.map(r=>`${r.liuQin}${r.ganZhi}（第${r.pos}爻${r.shi?"·持世":""}${r.kong?"·旬空":""}${r.monthJian?"·临月建":""}${r.dayChen?"·临日辰":""}）`).join("；"):`卦中<b style="color:var(--red)">不现</b>（查伏神，于本宫首卦中寻）`;
+  const yuanWX=WX_SHENG[ {  "父母":"父母","兄弟":"兄弟","子孙":"子孙","妻财":"妻财","官鬼":"官鬼" }[use] ] ;
+  // 用神/原神/忌神/仇神 五行关系
+  const useWx=res.rows.find(r=>r.liuQin===use)?.wx;
+  let relation="";
+  if(useWx){
+    const count=w=>res.rows.filter(r=>r.wx===w).length;
+    const shengUse=WX_SHENG[useWx], useSheng=WX_SHENG[useWx]&&Object.keys(WX_SHENG).find(k=>WX_SHENG[k]===useWx), keUse=Object.keys(WX_KE).find(k=>WX_KE[k]===useWx), useKe=WX_KE[useWx];
+    relation=`原神（生用神）：${shengUse}${count(shengUse)}个 · 忌神（克用神）：${keUse}${count(keUse)}个 · 仇神（生忌克原）：${keUse&&WX_SHENG[keUse]?WX_SHENG[keUse]+"":""} · 用神生克：用神克${useKe}${count(useKe)}个`;
+  }
+  $("#pb").innerHTML=`
+    <div class="notice gold">用神取法：所测之事对应六亲为用神。本卦用神：<b>${yongInfo}</b></div>
+    <div class="doc">
+      <h3>一、看用神旺衰</h3>
+      ${relation||"（用神不现，先寻伏神再论生克）"}<br>
+      ① 月建生日辰比用神 → 旺；月破（月建冲）日绝 → 衰；② 临旬空：旬内空亡，出旬或冲空之日应事；③ 动爻生用为吉，动爻克用为凶，忌神动而原神动可通关（忌神→原神→用神）。
+      <h3>二、看世应</h3>
+      世为自己，应为他人/对方。世爻宜旺不宜空，应爻冲克世爻主对方不利我；世应相生主和合。持世之六亲与所测事相关则事易成（如妻财持世测财）。
+      <h3>三、看卦变</h3>
+      老阳老阴为动爻，动而变出之爻为本爻将来之势：化进神（如寅化卯）事渐兴，化退神事渐退，化回头克（变爻克本爻）为凶，化回头生为吉。
+      <h3>四、应期口诀</h3>
+      旺相之爻逢冲应，休囚之爻逢值应；静爻逢值逢冲应，动爻逢值逢合应；旬空出旬应，月破出月应。
+      <h3 class="mut" style="color:var(--muted)">五、提醒</h3>
+      <span class="mut">以上为《增删卜易》通行框架的速查指引，实战断卦远较此复杂（伏神飞神、三合局、反吟伏吟、独发独静等），本页供学习入门。</span>
+    </div>`;
+}
+
+// 装卦规则文档
+$("#pc").innerHTML=`<div class="doc">
+  <h3>一、八宫与世应</h3>
+  京房分六十四卦为八宫（乾坎艮震巽离坤兑），每宫八字：本宫、一世至五世、游魂、归魂。一世变初爻、二世再变二爻……游魂四爻复归，归魂内卦复本。世应：本宫世六应三，n世世n应n+3，游魂世四应一，归魂世三应六。
+  <h3>二、纳甲歌</h3>
+  乾金甲子外壬午，坎水戊寅外戊申，艮土丙辰外丙戌，震木庚子外庚午；<br>巽木辛丑外辛未，离火己卯外己酉，坤土乙未外癸丑，兑金丁巳外丁亥。<br>
+  <span class="mut">内卦三爻自所纳地支起隔位顺行（子寅辰/午申戌），外卦同理。</span>
+  <h3>三、六亲</h3>
+  以本卦宫五行为我：同我兄弟、生我父母、我生子孙、克我官鬼、我克妻财。
+  <h3>四、六兽起法</h3>
+  甲乙日起青龙，丙丁起朱雀，戊起勾陈，己起腾蛇，庚辛起白虎，壬癸起玄武，自初爻顺行。
+  <h3>五、摇钱法</h3>
+  三枚铜钱掷六次：一背为单（少阳）━，二背为拆（少阴）━ ━，三背为重（老阳）○动，无背为交（老阴）✕动。
+  <h3>六、旬空</h3>
+  以日辰所在旬查空亡二支，临之爻为旬空。空逢冲则实，静空逢冲则起。
+</div>`;
+</script>
+</body>
+</html>
