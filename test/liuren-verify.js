@@ -105,5 +105,15 @@ check("甲日见申金 = 官鬼（金克木）", LR.liuQin("甲", "申"), "官�
   check("端到端：月将与中气对应", LR.ZHONGQI_JIANG[r.qi] === r.jiang && r.jiang.length === 1, true);
 }
 
+/* 9. 三传遁干：2026-11-02 午时（甲戌旬） */
+{
+  const rr = LR.paipan(L.Solar.fromYmdHms(2026, 11, 2, 12, 0, 0));
+  // 卯将午时 庚辰日：贼克课 初巳 中寅 末亥
+  check("贼克课三传 = 巳寅亥", rr.chuan, ["巳", "寅", "亥"]);
+  check("初传巳临申位 = 甲戌旬空（无遁干）", rr.chuanDetail[0].dun, null);
+  check("中传寅临巳位 遁辛", rr.chuanDetail[1].dun, "辛");
+  check("末传亥临寅位 遁戊", rr.chuanDetail[2].dun, "戊");
+}
+
 console.log(`\n════════ 结果: ${pass} 通过, ${fail} 失败 ════════`);
 process.exit(fail ? 1 : 0);

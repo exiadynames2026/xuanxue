@@ -101,6 +101,7 @@ function render(c, lunar){
         <div><b>${lunar.getYearGanExact()}${lunar.getYearZhiExact()}年</b> · 农历${Math.abs(lunar.getMonth())}月${lunar.getDay()}日 ${$("#inHZ").value}时 · ${gender===1?"乾造":"坤造"}</div>
         <div>五行局：<b>${c.wx}${c.ju}局</b>（命宫 ${c.mingGanZhi}，纳音${c.nayin}）</div>
         <div>命宫：<b>${PAL[c.mingPal]}</b> · 身宫：<b>${PAL[c.shenPal]}</b> · 大限${c.forward?"顺行":"逆行"}，${c.ju}岁起限</div>
+        <div>命主：<b>${c.mingZhu}</b> · 身主：<b>${c.shenZhu}</b></div>
         <div style="color:var(--muted);font-size:11px">十四主星 + 禄存擎羊陀罗 + 魁钺昌曲辅弼 + 火铃空劫 + 生年四化。安星未含庙旺亮度、自化、大限流年四化，供学习参考。</div>
       </div>`; centerDone=true; }
       return; }
@@ -111,7 +112,7 @@ function render(c, lunar){
     const isShen = c.shenPal===i;
     cells+=`<div class="zw-cell ${isMing?"ming":""}">
       ${isShen?'<span class="shen">身宫</span>':""}
-      <div class="gong">${gong}${isMing?" ★":""}</div>
+      <div class="gong">${gong}${isMing?" ★":""} · ${c.csMap[i]||""}</div>
       <div class="gz">${gz} · ${dx?dx.from+"–"+dx.to+"岁":""}</div>
       <div class="stars">${stars.length?stars.map(s=>{
         const main=["紫微","天机","太阳","武曲","天同","廉贞","天府","太阴","贪狼","巨门","天相","天梁","七杀","破军"].some(k=>s.startsWith(k));

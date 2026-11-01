@@ -92,5 +92,21 @@ check("阳遁节节数为正、阴遁为负",
   check("夏至后局数 ∈ {9,3,6,8,2,5,7,1,4}", [9,3,6,8,2,5,7,1,4].includes(summer.ju), true);
 }
 
+/* 5. 格局判定：击刑/入墓/门迫（合成盘面） */
+{
+  const fake = {
+    tianYi: { 2: "己", 6: "丙", 8: "丁", 9: "乙" },   // 己@坤2击刑 丙@乾6入墓 丁@艮8入墓 乙@离9(不入墓,墓在坤2)
+    tianMen: { 2: "伤门", 1: "休门" },                 // 伤门木@坤2土 → 门迫
+    PALACE_NAME: Q.PALACE_NAME || { 2: "坤", 6: "乾", 8: "艮", 9: "离", 1: "坎" },
+  };
+  const gj = Q.geju(fake);
+  check("己落坤2 击刑", gj.some(x => x.type === "击刑" && x.gong === 2), true);
+  check("丙落乾6 入墓", gj.some(x => x.type === "入墓" && x.gong === 6), true);
+  check("丁落艮8 入墓", gj.some(x => x.type === "入墓" && x.gong === 8), true);
+  check("乙落离9 不入墓（墓在坤2）", gj.some(x => x.type === "入墓" && x.gong === 9), false);
+  check("伤门落坤2 门迫（木克土）", gj.some(x => x.type === "门迫" && x.gong === 2), true);
+  check("休门落坎1 不迫（水水比和）", gj.some(x => x.type === "门迫" && x.gong === 1), false);
+}
+
 console.log(`\n════════ 结果: ${pass} 通过, ${fail} 失败 ════════`);
 process.exit(fail ? 1 : 0);

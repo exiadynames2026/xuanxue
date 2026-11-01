@@ -177,10 +177,21 @@
     const { men, chuan } = sanChuan(dayGz, ke, tian);
     const night = !"卯辰巳午未申".includes(hourZhi);
     const tj = tianJiang(dayGz, tian, night);
+    // 遁干：时旬旬首甲落地盘旬首支位，顺布十天干；天盘支取其所临地盘位之遁干
+    const tGz = lunar.getTimeInGanZhi ? lunar.getTimeInGanZhi() : null;
+    const hourGz = tGz || (dayGz[0] + hourZhi);
+    const xunIdxLR = Math.floor((function(gz){const g=GAN.indexOf(gz[0]),zh=ZHI.indexOf(gz[1]);for(let i=0;i<60;i++)if(i%10===g&&i%12===zh)return i;return 0;})(hourGz)/10);
+    const xunZhi = ZHI[(xunIdxLR*10)%12]; // 旬首支：甲子→子 甲戌→戌…
+    const shiftLR = idx(jiang) - idx(hourZhi);
+    const dunOf = (zhi) => {
+      const g = ((idx(zhi) - shiftLR) % 12 + 12) % 12;   // 天盘支所临地盘位
+      const off = ((g - idx(xunZhi)) % 12 + 12) % 12;
+      return off < 10 ? GAN[off] : null;                  // 落空亡两位无遁干
+    };
     const chuanDetail = chuan.map(z => ({
-      zhi: z, jiang: tj.map[z] || "—", wx: WX[z], liuQin: liuQin(dayGz[0], z),
+      zhi: z, jiang: tj.map[z] || "—", wx: WX[z], liuQin: liuQin(dayGz[0], z), dun: dunOf(z),
     }));
-    return { dayGz, hourZhi, jiang, jiangName: JIANG_NAME[jiang], qi, tian, ke, men, chuan, chuanDetail, tj, night };
+    return { dayGz, hourGz, hourZhi, jiang, jiangName: JIANG_NAME[jiang], qi, tian, ke, men, chuan, chuanDetail, tj, night, dunOf };
   }
 
   root.LiuRen = { paipan, yueJiang, tianPan, siKe, sanChuan, tianJiang, liuQin, JI_GONG, ZHONGQI_JIANG, TIANJIANG, XING, WX };

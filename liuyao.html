@@ -196,12 +196,12 @@ function renderPa(g,res,lunar,dayGz,monthZhi,solar){
   const html=`
     <div class="notice gold">占：<b>${$("#inMatter").selectedOptions[0].text}</b> · ${solar.toYmd()} ${SHICHEN_NAME[Math.floor(((+$("#inH").value+1)%24)/2)]} · 日辰 <b>${dayGz}</b> · 月建 <b>${monthZhi}</b> · 旬空 <b>${res.kong.join("")}</b></div>
     <div class="ly-grid">
-      <div class="ly-col"><div class="gua-title">本卦 · ${g.ben.name}<small>（${res.palace.name}宫${res.palace.wx} · ${res.info.tag}）</small></div>
+      <div class="ly-col"><div class="gua-title">本卦 · ${g.ben.name}<small>（${res.palace.name}宫${res.palace.wx} · ${res.info.tag}）</small> ${res.liuHe?"<span class="pill green">六合卦</span>":""} ${res.liuChong?"<span class="pill red">六冲卦</span>":""}</div>
         ${rowsDesc.map(r=>`<div class="ly-row">
           <span class="shou">${r.shou}</span>
           <span class="yao"><span style="color:${WX_COLOR[r.wx]}">${r.liuQin} ${r.ganZhi}</span><span style="display:block;margin-top:4px">${yaoBar(TRIGRAM_lineAt(g,r.pos))}</span></span>
           <span class="shiying">${r.shi?"世":r.ying?"应":""}</span>
-          <span class="mark">${r.kong?'<span class="kong">旬空</span> ':''}${r.monthJian?'<span class="jian">月建</span> ':''}${r.dayChen?'<span class="jian">日辰</span>':''}${r.moving?`<span style="color:var(--red)"> ${r.moving}</span>`:""}</span>
+          <span class="mark">${r.kong?'<span class="kong">旬空</span> ':''}${r.yuePo?'<span class="kong">月破</span> ':''}${r.monthJian?'<span class="jian">月建</span> ':''}${r.dayChen?'<span class="jian">日辰</span>':''}${r.riChong?'<span style="color:var(--blue)">日冲（静则暗动/日破）</span>':''}${r.moving?`<span style="color:var(--red)"> ${r.moving}</span>`:""}</span>
         </div>`).join("")}
       </div>
       <div class="ly-col"><div class="gua-title">变卦 · ${g.bian.name||"（静卦）"}</div>

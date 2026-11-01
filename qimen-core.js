@@ -134,10 +134,37 @@
     const kong = xunKong(timeGz);
     const maXing = YIMA[ZHI.indexOf(timeGz[1]) % 4];
     return { dun, ju, yuan, jieqi, futou, dayGz, timeGz, xunShou, xunYi, shouGong, zhiFuXing, zhiShiMen,
-      dipan, tianXing, tianYi, tianMen, tianShen, shiGanGong, kong, maXing,
+      dipan, tianXing, tianYi, tianMen, tianShen, shiGanGong, shiGong, kong, maXing,
       PALACE_NAME, STARS, DOORS };
   }
   const YIMA = ["寅", "亥", "申", "巳"]; // 申子辰/巳酉丑/寅午戌/亥卯未 驿马
 
-  root.QiMen = { paipan, dingJu, JU_TABLE, RING, STARS, DOORS, GODS, YI_ORDER };
+
+  // 六仪击刑：甲子戊刑震3 甲戌己刑坤2 甲申庚刑艮8 甲午辛刑离9 甲辰壬刑巽4 甲寅癸刑巽4
+  const JIXING = { "戊": 3, "己": 2, "庚": 8, "辛": 9, "壬": 4, "癸": 4 };
+  // 三奇入墓：乙墓未(坤2) 丙墓戌(乾6) 丁墓丑(艮8)
+  const QIMU = { "乙": 2, "丙": 6, "丁": 8 };
+  // 门迫：门五行克宫五行
+  const DOOR_WX = { "休门":"水", "生门":"土", "伤门":"木", "杜门":"木", "景门":"火", "死门":"土", "惊门":"金", "开门":"金" };
+  const PALACE_WX = { 1:"水", 2:"土", 3:"木", 4:"木", 6:"金", 7:"金", 8:"土", 9:"火" };
+  const KE2 = { "木":"土","土":"水","水":"火","火":"金","金":"木" };
+
+  /** 格局判定：击刑 / 入墓 / 门迫 */
+  function geju(r) {
+    const out = [];
+    for (let g = 1; g <= 9; g++) {
+      const ty = r.tianYi[g];
+      if (!ty) continue;
+      if ("戊己庚辛壬癸".includes(ty) && JIXING[ty] === g)
+        out.push({ type: "击刑", gong: g, txt: "天盘" + ty + "落" + g + "宫（" + PALACE_NAME[g] + "）击刑" });
+      if (QIMU[ty] === g)
+        out.push({ type: "入墓", gong: g, txt: "三奇" + ty + "落" + g + "宫入墓" });
+      const men = r.tianMen[g];
+      if (men && KE2[DOOR_WX[men]] === PALACE_WX[g])
+        out.push({ type: "门迫", gong: g, txt: men + "落" + g + "宫（" + PALACE_WX[g] + "）门迫" });
+    }
+    return out;
+  }
+
+  root.QiMen = { paipan, dingJu, geju, JU_TABLE, RING, STARS, DOORS, GODS, YI_ORDER, JIXING, QIMU };
 })(typeof window !== "undefined" ? window : globalThis);

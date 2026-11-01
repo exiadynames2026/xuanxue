@@ -6,6 +6,7 @@
 <title>八字排盘 · 四柱命理工具</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☯</text></svg>">
 <script src="lunar.js"></script>
+<script src="gz-relations.js"></script>
 <style>
 :root{
   --bg:#f5f1e8; --card:#fffdf7; --ink:#3b3529; --muted:#8a8272; --line:#e4dcc9;
@@ -65,6 +66,7 @@ input:focus,select:focus{outline:2px solid #d8c9a5;border-color:#c9b98f}
 .shensha{font-size:11px;line-height:1.5;padding:4px 2px;min-height:30px}
 .shensha span{display:inline-block;background:#f6efdc;border:1px solid #e8dcc0;border-radius:4px;padding:1px 5px;margin:1px;color:#7a5c2e;white-space:nowrap}
 .shensha span.big{background:#f9e4e1;border-color:#ecc2bc;color:var(--accent)}
+.pill{display:inline-block;background:#f6efdc;border:1px solid #e8dcc0;border-radius:4px;padding:2px 9px;margin:2px 3px;font-size:12px;color:#5d5238}
 .xiushi{font-size:12.5px;color:#5d5238}
 
 /* 五行 */
@@ -207,6 +209,11 @@ footer{max-width:1180px;margin:10px auto 30px;padding:0 16px;font-size:11.5px;co
     <div class="card" style="margin-bottom:18px">
       <h2>四柱八字</h2>
       <div class="bz-grid" id="bzGrid"></div>
+    </div>
+
+    <div class="card" style="margin-bottom:18px">
+      <h2>合冲刑害（四柱干支关系）</h2>
+      <div id="hcPanel" style="font-size:13px;line-height:2"></div>
     </div>
 
     <div class="card" style="margin-bottom:18px">
@@ -666,6 +673,12 @@ function render(name, gender, solar, lunar, tst, sect, pillars, dayGan, shenSha,
   $("#stPin").style.left = `calc(${strength.pct}% - 2px)`;
   $("#stVerdict").innerHTML = `日主 <b>${dayGan}（${ganWX(dayGan)}）</b> 简化评分：<b>${strength.verdict}</b>（同党力量占比约 ${strength.pct}%）`;
   $("#stSub").textContent = strength.details.join("；") + "。以印比为一党、食伤财官杀为一党的粗略力量对比，未计合冲刑害，仅供参考。";
+
+  // 合冲刑害
+  const rels = GzRelations.detect(pillars.map(p => ({ label: p.label, gan: p.gan, zhi: p.zhi })));
+  $("#hcPanel").innerHTML = rels.length
+    ? rels.map(r => `<span class="pill">${r.type}：${r.desc}</span>`).join(" ")
+    : "四柱干支无五合、六合、三合、三会、六冲、刑害关系（罕见而清纯粹的盘面）。";
 }
 
 function gzGan(g){

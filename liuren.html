@@ -116,7 +116,7 @@ function renderPa(r){
           <div class="box">
             <div class="j">${c.jiang}</div>
             <div class="z" style="color:${WX_COLOR[c.wx]}">${c.zhi}</div>
-            <div class="q">${c.wx} · ${c.liuQin}</div>
+            <div class="q">${c.wx} · ${c.liuQin}${c.dun?" · 遁"+c.dun:" · <span style="color:var(--red)">空</span>"}</div>
           </div>
         </div>`).join("")}</div>
       </div>

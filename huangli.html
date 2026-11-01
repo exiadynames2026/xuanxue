@@ -87,7 +87,11 @@ function go(y,m,d){
           <span class="dir">阴贵：<b>${lunar.getDayPositionYinGuiDesc()}</b></span>
         </div></div>
         <div class="hl-box"><div class="k">彭祖百忌</div><div class="v">${lunar.getPengZuGan().replace(/(.)/g,"$1 ")} · ${lunar.getPengZuZhi().replace(/(.)/g,"$1 ")}</div></div>
-      </div>`;
+      </div>
+      <div style="margin-top:14px"><div class="k" style="font-size:11.5px;color:var(--muted);letter-spacing:1px;margin-bottom:8px">每日十二时辰吉凶</div>
+      <table style="font-size:12.5px"><tr><th>时段</th><th>时辰</th><th>干支</th><th>天神</th><th>吉凶</th><th>冲</th><th>煞方</th><th>旬空</th></tr>
+      ${lunar.getTimes().map(t=>`<tr><td>${t.getMinHm()}–${t.getMaxHm()}</td><td><b>${t.getGanZhi()[1]==="子"&&(t.getMinHm()==="23:00")?"晚":(t.getGanZhi()[1]==="子"?"早":"")}${t.getGanZhi()[1]}时</b></td><td>${t.getGanZhi()}</td><td>${t.getTianShen()}</td><td style="color:${t.getTianShenLuck()==="吉"?"var(--ok)":"var(--red)"}"><b>${t.getTianShenLuck()}</b></td><td>冲${t.getChongShengXiao()}</td><td>煞${t.getSha()}</td><td>${t.getXunKong()}</td></tr>`).join("")}
+      </table></div>`;
   }catch(e){ $("#result").innerHTML=`<div class="err" style="display:block">${e.message}</div>`; }
 }
 $("#btnGo").addEventListener("click",()=>go(+$("#inY").value,+$("#inM").value,+$("#inD").value));

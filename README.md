@@ -2,18 +2,18 @@
 
 纯前端、零依赖部署的十合一中国传统玄学工具箱。
 
-![工具](https://img.shields.io/badge/%E5%B7%A5%E5%85%B7-10%E4%B8%AA-c9a227) ![测试](https://img.shields.io/badge/%E9%AA%8C%E8%AF%81-192%E9%A1%B9%E5%85%A8%E9%83%A8%E9%80%9A%E8%BF%87-2e8b57)
+![工具](https://img.shields.io/badge/%E5%B7%A5%E5%85%B7-10%E4%B8%AA-c9a227) ![测试](https://img.shields.io/badge/%E9%AA%8C%E8%AF%81-230%E9%A1%B9%E5%85%A8%E9%83%A8%E9%80%9A%E8%BF%87-2e8b57)
 
 | 工具 | 页面 | 内容 |
 |---|---|---|
-| 八字排盘 | [index.html](index.html) | 四柱十神藏干纳音、大运流年、真太阳时、20 神煞、身强弱 |
+| 八字排盘 | [index.html](index.html) | 四柱十神藏干纳音、大运流年、真太阳时、20 神煞、合冲刑害、身强弱 |
 | 铁板神数 | [tieban.html](tieban.html) | 河洛起卦、考时定刻、条文断、大限流年 |
-| 六爻排卦 | [liuyao.html](liuyao.html) | 京房纳甲装卦、六亲六兽世应、摇卦、用神指引 |
-| 奇门遁甲 | [qimen.html](qimen.html) | 时家转盘拆补定局、九星八门八神、九宫格排盘 |
-| 大六壬 | [liuren.html](liuren.html) | 月将加时、四课三传九宗门、十二天将 |
-| 紫微斗数 | [ziwei.html](ziwei.html) | 全盘安星（14 主星 + 辅煞 + 四化）、十二宫、大限 |
+| 六爻排卦 | [liuyao.html](liuyao.html) | 京房纳甲装卦、六亲六兽世应、摇卦、用神指引、六合六冲卦、月破日冲 |
+| 奇门遁甲 | [qimen.html](qimen.html) | 时家转盘拆补定局、九星八门八神、击刑入墓门迫判定 |
+| 大六壬 | [liuren.html](liuren.html) | 月将加时、四课三传九宗门、十二天将、三传遁干 |
+| 紫微斗数 | [ziwei.html](ziwei.html) | 全盘安星（14 主星 + 辅煞 + 四化）、命主身主、长生十二神、大限 |
 | 梅花易数 | [meihua.html](meihua.html) | 时间/数字起卦、体用互变、万物类象 |
-| 黄历择日 | [huangli.html](huangli.html) | 每日宜忌、吉凶神、冲煞、建除、喜财神方位 |
+| 黄历择日 | [huangli.html](huangli.html) | 每日宜忌、吉凶神、冲煞、建除、喜财神方位、十二时辰吉凶 |
 | 姓名学 | [xingming.html](xingming.html) | 五格剖象、81 数理、三才配置（康熙笔画） |
 | 称骨 | [chengu.html](chengu.html) | 袁天罡称骨歌全套骨重表与批诗 |
 
@@ -48,7 +48,8 @@ node test/liuyao-verify.js  # 六爻 25 项
 node test/qimen-verify.js   # 奇门 15 项
 node test/meihua-verify.js  # 梅花 19 项
 node test/ziwei-verify.js   # 紫微 35 项
-node test/liuren-verify.js  # 大六壬 24 项
+node test/liuren-verify.js  # 大六壬 28 项
+node test/gz-relations-verify.js  # 干支关系 13 项
 ```
 
 ### 准确性验证

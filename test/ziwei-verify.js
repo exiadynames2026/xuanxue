@@ -123,5 +123,18 @@ function starsAt(chart){
   check("子年午时 火星在申 铃星在辰（起宫后顺数午位）", [m2["火星"], m2["铃星"]], ["申", "辰"]);
 }
 
+/* 9. 命主身主与长生十二神 */
+{
+  const c = ZW.anXing("庚", "午", 5, 5, "午", 1); // 五月初五午时：命宫子 火六局 阳男
+  check("命宫子 → 命主贪狼", c.mingZhu, "贪狼");
+  check("午年 → 身主火星", c.shenZhu, "火星");
+  check("火六局长生起寅", PAL.findIndex((z2, i) => c.csMap[i] === "长生"), 0);
+  check("阳男顺行：卯沐浴", c.csMap[1], "沐浴");
+  check("命宫子(寅起第9位) = 胎", c.csMap[c.mingPal], "胎");
+  // 阳女逆行（庚阳干+女）：火六局长生寅起逆数，丑第11位 = 沐浴
+  const c2 = ZW.anXing("庚", "午", 5, 5, "午", 0);
+  check("阳女逆行：丑第11位 = 沐浴", c2.csMap[11], "沐浴");
+}
+
 console.log(`\n════════ 结果: ${pass} 通过, ${fail} 失败 ════════`);
 process.exit(fail ? 1 : 0);

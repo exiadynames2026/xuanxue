@@ -86,14 +86,19 @@ $("#btnGo").addEventListener("click",()=>{
 });
 function renderPa(){
   const r=R;
+  window.__GJ=QiMen.geju(r);
   // 九宫所含地支：坎1[子] 艮8[丑寅] 震3[卯] 巽4[辰巳] 离9[午] 坤2[未申] 兑7[酉] 乾6[戌亥]
   const PALACE_ZHI={1:["子"],8:["丑","寅"],3:["卯"],4:["辰","巳"],9:["午"],2:["未","申"],7:["酉"],6:["戌","亥"]};
   const cell=g=>{
     if(g===5) return `<div class="g9 center">中五宫<br>天禽寄坤二<br><span style="color:var(--accent)">地盘 ${r.dipan[5]}</span></div>`;
     const qi = "乙丙丁".includes(r.tianYi[g]) ? "qi" : "";
     const yiT = r.tianYi[g] ? `<span class="yi-t ${qi}">${r.tianYi[g]}</span>` : "";
-    const marks=[ (r.kong.some(z=>PALACE_ZHI[g].includes(z))?'<span class="pill red">空</span>':""),
-                  (PALACE_ZHI[g].includes(r.maXing)?'<span class="pill gold">马</span>':"") ].join("");
+    const gj=window.__GJ||[];
+    const gjTags=gj.filter(x=>x.gong===g).map(x=>'<span class="pill red">'+x.type+'</span>').join("");
+    const marks=[ (g===r.shiGanGong?'<span class="pill gold">符</span>':""),
+                  (g===r.shiGong?'<span class="pill blue">使</span>':""),
+                  (r.kong.some(z=>PALACE_ZHI[g].includes(z))?'<span class="pill red">空</span>':""),
+                  (PALACE_ZHI[g].includes(r.maXing)?'<span class="pill gold">马</span>':""), gjTags ].join("");
     return `<div class="g9">
       <span class="gname">${g}${r.PALACE_NAME[g]}</span>
       <div class="god">${r.tianShen[g]||"—"}</div>
@@ -115,6 +120,7 @@ function renderPa(){
       <div class="n"><b>${r.maXing}</b><span>马星</span></div>
     </div>
     ${$("#inAsk").value?`<div class="notice">所问：${$("#inAsk").value}</div>`:""}
+    <div class="notice gold" style="margin-bottom:12px"><b>格局判定</b>：${window.__GJ && window.__GJ.length ? window.__GJ.map(x=>x.txt+"（"+x.type+"）").join("；") : "本局无击刑、入墓、门迫（清局）。"}</div>
     <div class="grid9">${cell(4)}${cell(9)}${cell(2)}${cell(3)}${cell(5)}${cell(7)}${cell(8)}${cell(1)}${cell(6)}</div>
     <div class="hint" style="margin-top:12px">每宫自上而下：八神 / 九星+天盘三奇六仪 / 八门 / 地盘仪。〇标红者为三奇（乙丙丁），"空"为时辰旬空落宫，"马"为驿马动宫。</div>`;
 }

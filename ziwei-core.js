@@ -106,6 +106,21 @@
       const p = ((mingPal + (forward ? i : -i)) % 12 + 12) % 12;
       daxian.push({ palace: p, from: ju + i * 10, to: ju + i * 10 + 9 });
     }
+    // 命主（命宫支）与身主（年支）
+    const MINGZHU = { "子":"贪狼","丑":"巨门","寅":"禄存","卯":"文曲","辰":"廉贞","巳":"武曲","午":"破军","未":"武曲","申":"廉贞","酉":"文曲","戌":"禄存","亥":"巨门" };
+    const SHENZHU = { "子":"火星","丑":"天相","寅":"天梁","卯":"天同","辰":"文昌","巳":"天机","午":"火星","未":"天相","申":"天梁","酉":"天同","戌":"文昌","亥":"天机" };
+    const mingZhu = MINGZHU[PAL[mingPal]];
+    const shenZhu = SHENZHU[yearZhi];
+    // 长生十二神：五行局长生宫（水申 木亥 金巳 土申 火寅），阳男阴女顺、阴男阳女逆
+    const CS_START = { 2: "申", 3: "亥", 4: "巳", 5: "申", 6: "寅" };
+    const CS12 = ["长生","沐浴","冠带","临官","帝旺","衰","病","死","墓","绝","胎","养"];
+    const csStart = pIdx(CS_START[ju]);
+    const csMap = {};
+    for (let i = 0; i < 12; i++) {
+      const p = ((csStart + (forward ? i : -i)) % 12 + 12) % 12;
+      csMap[p] = CS12[i];
+    }
+
     // 星曜落宫汇总
     const starMap = {};
     const put = (name, pal) => {
@@ -121,7 +136,7 @@
     put("火星", huoPal); put("铃星", lingPal);
     put("地空", kongPal); put("地劫", jiePal);
 
-    return { mingPal, shenPal, mingGanZhi, nayin, wx, ju, starMap, gongName, gongGan, daxian, forward, sihua, yearGan, yearZhi, lunarMonth, lunarDay, hourZhi, gender };
+    return { mingPal, shenPal, mingGanZhi, nayin, wx, ju, starMap, gongName, gongGan, daxian, forward, sihua, yearGan, yearZhi, lunarMonth, lunarDay, hourZhi, gender, mingZhu, shenZhu, csMap };
   }
 
   const GAN = ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];

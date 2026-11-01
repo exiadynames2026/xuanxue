@@ -90,5 +90,29 @@ check("坤宫土: 乙卯→官鬼 癸亥→妻财 癸酉→子孙",
   check("山地剥非六合", isLiuHe("山地剥"), false);
 }
 
+/* 8. 六合卦/六冲卦判定 */
+{
+  check("地天泰 = 六合卦", LY.heChongGua("地天泰"), { liuHe: true, liuChong: false });
+  check("天地否 = 六合卦", LY.heChongGua("天地否"), { liuHe: true, liuChong: false });
+  check("天雷无妄 = 六冲卦", LY.heChongGua("天雷无妄"), { liuHe: false, liuChong: true });
+  check("乾为天 = 六冲卦（八纯）", LY.heChongGua("乾为天"), { liuHe: false, liuChong: true });
+  check("火山旅 = 六合卦", LY.heChongGua("火山旅"), { liuHe: true, liuChong: false });
+  check("水火既济非六合（卯申不合）", LY.heChongGua("水火既济").liuHe, false);
+}
+
+/* 9. 月破/日冲标记 */
+{
+  // 甲子日 子月 装乾为天：月建子冲午 → 四爻壬午月破
+  const z = LY.zhuangGua("乾为天", null, "甲子", "子");
+  const wu = z.rows.find(r => r.ganZhi === "壬午");
+  check("午爻月破（月建子冲午）", wu && wu.yuePo, true);
+  const zi = z.rows.find(r => r.ganZhi === "甲子");
+  check("子爻日辰", zi && zi.dayChen, true);
+  // 庚午日：日支午冲子爻
+  const z2 = LY.zhuangGua("乾为天", null, "庚午", "子");
+  const zi2 = z2.rows.find(r => r.ganZhi === "甲子");
+  check("子爻日冲（庚午日）", zi2 && zi2.riChong, true);
+}
+
 console.log(`\n════════ 结果: ${pass} 通过, ${fail} 失败 ════════`);
 process.exit(fail ? 1 : 0);

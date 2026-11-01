@@ -114,6 +114,18 @@
     };
   }
 
+  /** 六合卦（初四/二五/三上支两两相合）/ 六冲卦（两两相冲） */
+  function heChongGua(name) {
+    const info = root.__LiuYaoMap[name];
+    if (!info) return { liuHe: false, liuChong: false };
+    const z = info.najia.map(g => g[1]);
+    const HE = { "子":"丑","丑":"子","寅":"亥","亥":"寅","卯":"戌","戌":"卯","辰":"酉","酉":"辰","巳":"申","申":"巳","午":"未","未":"午" };
+    const ch = i => ZHI[(ZHI.indexOf(z[i]) + 6) % 12];
+    const liuHe = HE[z[0]] === z[3] && HE[z[1]] === z[4] && HE[z[2]] === z[5];
+    const liuChong = ch(0) === z[3] && ch(1) === z[4] && ch(2) === z[5];
+    return { liuHe, liuChong };
+  }
+
   /**
    * 装卦：纳甲、六亲、六兽、世应、旬空
    * @param name 本卦名（64卦名）
@@ -140,6 +152,8 @@
         shi: info.shi === i + 1,
         ying: info.ying === i + 1,
         kong: kong.includes(gz[1]),
+        yuePo: monthZhi && ZHI[(ZHI.indexOf(monthZhi) + 6) % 12] === gz[1],
+        riChong: dayGanZhi && ZHI[(ZHI.indexOf(dayGanZhi[1]) + 6) % 12] === gz[1],
         monthJian: monthZhi === gz[1],
         dayChen: dayGanZhi[1] === gz[1],
         moving: null, bianGanZhi: null,
@@ -155,7 +169,8 @@
         }
       }
     }
-    return { info, rows, kong, palace: info.palace };
+    const hc = heChongGua(name);
+    return Object.assign(hc, { info, rows, kong, palace: info.palace });
   }
 
   /** 干支旬空（无库时兜底） */
@@ -171,5 +186,5 @@
   const ZHI = ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
 
   root.__LiuYaoMap = buildAll();
-  root.LiuYao = { PALACES, NAJIA, LIU_SHOU, buildPalace, buildAll, liuQin, coinToYao, fromTosses, zhuangGua, linesOf, trigramsOf };
+  root.LiuYao = { PALACES, NAJIA, LIU_SHOU, buildPalace, buildAll, liuQin, coinToYao, fromTosses, zhuangGua, linesOf, trigramsOf, heChongGua };
 })(typeof window !== "undefined" ? window : globalThis);
