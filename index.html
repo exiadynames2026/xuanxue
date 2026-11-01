@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>八字排盘 · 四柱命理工具</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☯</text></svg>">
+<script src="lunar.js"></script>
+<style>
+:root{
+  --bg:#f5f1e8; --card:#fffdf7; --ink:#3b3529; --muted:#8a8272; --line:#e4dcc9;
+  --accent:#a4443a; --accent2:#7a5c2e;
+  --wx-jin:#b8860b; --wx-mu:#2e8b57; --wx-shui:#1e6bb8; --wx-huo:#c0392b; --wx-tu:#9a7b32;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Microsoft YaHei","PingFang SC","Noto Sans SC",sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+header{background:linear-gradient(135deg,#5c3a2e,#7a5c2e);color:#f7f1e3;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(60,40,20,.25)}
+header h1{font-size:20px;letter-spacing:2px;font-weight:600}
+header h1 small{font-size:12px;opacity:.75;letter-spacing:1px;margin-left:10px;font-weight:400}
+header a{color:#f7f1e3;opacity:.85;font-size:13px;text-decoration:none;border:1px solid rgba(247,241,227,.4);padding:4px 12px;border-radius:14px}
+header a:hover{opacity:1}
+.wrap{max-width:1180px;margin:20px auto;padding:0 16px;display:grid;grid-template-columns:320px 1fr;gap:18px;align-items:start}
+@media(max-width:900px){.wrap{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:0 1px 4px rgba(120,100,60,.08)}
+.card h2{font-size:15px;color:var(--accent2);margin-bottom:14px;letter-spacing:1px;border-bottom:1px dashed var(--line);padding-bottom:8px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+input[type=text],input[type=number],select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:14px;color:var(--ink);font-family:inherit}
+input:focus,select:focus{outline:2px solid #d8c9a5;border-color:#c9b98f}
+.row{display:flex;gap:8px}
+.row>*{flex:1}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{flex:1;padding:8px 4px;border:none;background:#fff;font-size:13px;cursor:pointer;color:var(--muted);font-family:inherit}
+.seg button.on{background:var(--accent);color:#fff}
+.seg button:not(.on):hover{background:#f6f0e0}
+.hint{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5}
+.check{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--ink);cursor:pointer;margin-bottom:8px}
+.check input{accent-color:var(--accent);width:15px;height:15px}
+.btn{width:100%;padding:11px;border:none;border-radius:9px;background:linear-gradient(135deg,#a4443a,#c0574a);color:#fff;font-size:15px;letter-spacing:4px;cursor:pointer;font-family:inherit;margin-top:6px;box-shadow:0 2px 6px rgba(164,68,58,.35)}
+.btn:hover{filter:brightness(1.06)}
+.btn.ghost{background:#fff;color:var(--accent2);border:1px solid var(--line);box-shadow:none;letter-spacing:1px;font-size:13px;padding:8px}
+.btn.ghost:hover{background:#f6f0e0}
+.err{background:#fbe9e7;color:#a4443a;border:1px solid #efb9b2;border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:12px;display:none}
+
+/* 基本信息 */
+.info-grid{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:13.5px;line-height:1.9}
+.info-grid b{color:var(--muted);font-weight:400;margin-right:6px}
+.tag-gender{display:inline-block;background:var(--accent);color:#fff;border-radius:4px;font-size:12px;padding:1px 8px;margin-right:6px}
+.tst-fix{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.7}
+.tst-fix em{font-style:normal;color:var(--accent)}
+
+/* 四柱表 */
+.bz-grid{display:grid;grid-template-columns:64px repeat(4,minmax(86px,1fr));gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+.bz-grid>div{padding:9px 4px;text-align:center;border-bottom:1px solid var(--line);border-right:1px solid var(--line);font-size:13px;min-height:38px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:2px}
+.bz-grid>div:nth-child(5n){border-right:none}
+.bz-grid .rh{background:#f3eddd;color:var(--muted);font-size:12px;letter-spacing:2px}
+.bz-grid .hd{background:#efe7d2;font-size:12.5px;color:var(--accent2);letter-spacing:1px}
+.ganzhi{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600;border:2px solid;margin:0 auto}
+.ganzhi.sm{width:36px;height:36px;font-size:17px}
+.shishen{font-size:12px;color:var(--muted)}
+.hidegan{font-size:12px;line-height:1.6}
+.hidegan span{margin:0 2px}
+.hidegan i{font-style:normal;font-size:10.5px;color:var(--muted);margin-left:1px}
+.nayin{font-size:11.5px;color:#77694a}
+.shensha{font-size:11px;line-height:1.5;padding:4px 2px;min-height:30px}
+.shensha span{display:inline-block;background:#f6efdc;border:1px solid #e8dcc0;border-radius:4px;padding:1px 5px;margin:1px;color:#7a5c2e;white-space:nowrap}
+.shensha span.big{background:#f9e4e1;border-color:#ecc2bc;color:var(--accent)}
+.xiushi{font-size:12.5px;color:#5d5238}
+
+/* 五行 */
+.wx-bars{display:flex;flex-direction:column;gap:9px}
+.wx-row{display:flex;align-items:center;gap:10px;font-size:13px}
+.wx-row .name{width:64px;display:flex;align-items:center;gap:6px;color:var(--ink)}
+.wx-dot{width:11px;height:11px;border-radius:3px;display:inline-block}
+.wx-track{flex:1;height:16px;background:#f0e9d8;border-radius:8px;overflow:hidden}
+.wx-fill{height:100%;border-radius:8px;min-width:2px;transition:width .4s}
+.wx-row .num{width:78px;text-align:right;color:var(--muted);font-size:12px}
+
+/* 大运 */
+.dayun-note{font-size:12.5px;color:var(--muted);margin-bottom:10px;line-height:1.7}
+.dayun-strip{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px}
+.dy-col{min-width:74px;flex:0 0 auto;border:1px solid var(--line);border-radius:9px;background:#fff;text-align:center;padding:8px 4px;cursor:pointer;transition:.15s}
+.dy-col:hover{border-color:var(--accent);box-shadow:0 2px 6px rgba(164,68,58,.15)}
+.dy-col.cur{border-color:var(--accent);background:#fdf3f1}
+.dy-age{font-size:11px;color:var(--muted)}
+.dy-gz{font-size:16.5px;font-weight:600;margin:4px 0;line-height:1.35}
+.dy-gz span{display:block}
+.dy-yr{font-size:10.5px;color:var(--muted)}
+.liunian{display:none;margin-top:10px;border-top:1px dashed var(--line);padding-top:10px}
+.liunian.show{display:flex;flex-wrap:wrap;gap:6px}
+.ln-chip{border:1px solid var(--line);border-radius:6px;background:#fbf7ec;padding:4px 9px;font-size:12px;text-align:center;line-height:1.5;min-width:64px}
+.ln-chip b{display:block;font-size:12.5px;font-weight:600}
+.ln-chip small{color:var(--muted);font-size:10.5px}
+
+/* 其他信息 */
+.misc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.misc-item{background:#fbf7ec;border:1px solid var(--line);border-radius:9px;padding:10px 12px}
+.misc-item .k{font-size:11px;color:var(--muted);letter-spacing:1px}
+.misc-item .v{font-size:15px;font-weight:600;margin-top:3px}
+.misc-item .s{font-size:11px;color:var(--muted);margin-top:2px}
+.strength-wrap{margin-top:14px}
+.strength-track{height:20px;border-radius:10px;background:linear-gradient(90deg,#3a6ea5,#e8e0c8 45%,#e8e0c8 55%,#c0392b);position:relative;margin:8px 0 4px}
+.strength-pin{position:absolute;top:-5px;width:5px;height:30px;background:#3b3529;border-radius:3px;left:50%;transition:left .4s}
+.strength-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
+.strength-verdict{font-size:13.5px;margin-top:6px}
+.strength-verdict b{color:var(--accent)}
+.strength-sub{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.7}
+footer{max-width:1180px;margin:10px auto 30px;padding:0 16px;font-size:11.5px;color:var(--muted);line-height:1.8}
+#resultArea{display:none}
+.toast{position:fixed;top:18px;left:50%;transform:translateX(-50%);background:#3b3529;color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;display:none;z-index:9;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+</style>
+</head>
+<body>
+<header>
+  <h1>八字排盘<small>四柱命理 · 玄学工具箱</small></h1>
+  <a href="https://github.com/exiadynames2026/xuanxue" target="_blank">GitHub 仓库</a>
+</header>
+
+<div class="wrap">
+  <!-- 输入面板 -->
+  <div class="card" id="inputCard">
+    <h2>出生信息</h2>
+    <div class="err" id="errBox"></div>
+    <div class="field">
+      <label>姓名（可选）</label>
+      <input type="text" id="inName" placeholder="例：张三" maxlength="20">
+    </div>
+    <div class="field">
+      <label>性别（决定大运顺逆）</label>
+      <div class="seg" id="segGender">
+        <button data-v="1" class="on">乾造（男）</button>
+        <button data-v="0">坤造（女）</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>历法</label>
+      <div class="seg" id="segCal">
+        <button data-v="solar" class="on">公历</button>
+        <button data-v="lunar">农历</button>
+      </div>
+    </div>
+    <div class="field">
+      <label id="lbDate">出生日期（公历）</label>
+      <div class="row" id="rowSolar">
+        <input type="number" id="inY" placeholder="年" min="1900" max="2100" value="1990">
+        <input type="number" id="inM" placeholder="月" min="1" max="12" value="1">
+        <input type="number" id="inD" placeholder="日" min="1" max="31" value="1">
+      </div>
+      <div class="row" id="rowLunar" style="display:none">
+        <input type="number" id="inLY" placeholder="年" min="1900" max="2100" value="1990">
+        <input type="number" id="inLM" placeholder="月" min="1" max="12" value="1">
+        <input type="number" id="inLD" placeholder="日" min="1" max="30" value="1">
+      </div>
+      <label class="check" id="chkLeapWrap" style="display:none;margin-top:6px">
+        <input type="checkbox" id="inLeap"> 闰月
+      </label>
+    </div>
+    <div class="field">
+      <label>出生时间</label>
+      <div class="row">
+        <select id="inH"></select>
+        <select id="inMin">
+          <option value="0" selected>0分</option><option value="10">10分</option>
+          <option value="20">20分</option><option value="30">30分</option>
+          <option value="40">40分</option><option value="50">50分</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>出生地（用于真太阳时校正）</label>
+      <select id="inCity"></select>
+    </div>
+    <div class="field">
+      <label>子时模式（23:00–24:00 出生日柱归属）</label>
+      <select id="inSect">
+        <option value="2" selected>晚子时日柱算当天（主流）</option>
+        <option value="1">晚子时日柱算明天</option>
+      </select>
+    </div>
+    <button class="btn" id="btnGo">开 始 排 盘</button>
+    <button class="btn ghost" id="btnRandom">🎲 随机示例</button>
+  </div>
+
+  <!-- 结果区 -->
+  <div id="resultArea">
+    <div class="card" style="margin-bottom:18px">
+      <h2>基本信息</h2>
+      <div class="info-grid" id="infoGrid"></div>
+      <div class="tst-fix" id="tstNote"></div>
+    </div>
+
+    <div class="card" style="margin-bottom:18px">
+      <h2>四柱八字</h2>
+      <div class="bz-grid" id="bzGrid"></div>
+    </div>
+
+    <div class="card" style="margin-bottom:18px">
+      <h2>大运 · 流年（虚岁）</h2>
+      <div class="dayun-note" id="dyNote"></div>
+      <div class="dayun-strip" id="dyStrip"></div>
+      <div class="liunian" id="lnPanel"></div>
+    </div>
+
+    <div class="card" style="margin-bottom:18px">
+      <h2>五行统计（干支与藏干按个数计）</h2>
+      <div class="wx-bars" id="wxBars"></div>
+    </div>
+
+    <div class="card">
+      <h2>命宫 · 胎元 · 身宫 · 日主强弱</h2>
+      <div class="misc-grid" id="miscGrid"></div>
+      <div class="strength-wrap">
+        <div class="strength-track"><div class="strength-pin" id="stPin"></div></div>
+        <div class="strength-labels"><span>身弱</span><span>中和</span><span>身强</span></div>
+        <div class="strength-verdict" id="stVerdict"></div>
+        <div class="strength-sub" id="stSub"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  历法内核 <a href="https://github.com/6tail/lunar-javascript" target="_blank">lunar-javascript</a>（MIT License），节气由天文算法计算，精确到分钟级。<br>
+  十神、藏干、纳音、十二长生、大运流年遵循《渊海子平》《三命通会》通行口径；神煞与身强身弱为简化算法，仅供娱乐与学习参考，不构成任何人生建议。
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const GAN = ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
+const ZHI = ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
+const WX_COLOR = {"金":"var(--wx-jin)","木":"var(--wx-mu)","水":"var(--wx-shui)","火":"var(--wx-huo)","土":"var(--wx-tu)"};
+const SHENG_XIAO = ["鼠","牛","虎","兔","龙","蛇","马","羊","猴","鸡","狗","猪"];
+const CHANG_SHENG = ["长生","沐浴","冠带","临官","帝旺","衰","病","死","墓","绝","胎","养"];
+// 长生起点偏移（与 lunar-javascript CHANG_SHENG_OFFSET 一致）：长生位 = (offset ± 支序) mod 12
+const CS_OFFSET = {"甲":1,"丙":10,"戊":10,"庚":7,"壬":4,"乙":6,"丁":9,"己":9,"辛":0,"癸":3};
+const SHICHEN_NAME = ["子时","丑时","寅时","卯时","辰时","巳时","午时","未时","申时","酉时","戌时","亥时"];
+const SHICHEN_RANGE = ["23:00–01:00","01:00–03:00","03:00–05:00","05:00–07:00","07:00–09:00","09:00–11:00","11:00–13:00","13:00–15:00","15:00–17:00","17:00–19:00","19:00–21:00","21:00–23:00"];
+
+/* ---------------- 城市经度表 ---------------- */
+const CITIES = [
+ ["北京",116.41],["天津",117.20],["上海",121.47],["重庆",106.55],
+ ["河北·石家庄",114.51],["河北·唐山",118.18],["河北·保定",115.46],["河北·秦皇岛",119.60],
+ ["山西·太原",112.55],["山西·大同",113.30],["山西·长治",113.12],
+ ["内蒙古·呼和浩特",111.75],["内蒙古·包头",109.84],["内蒙古·赤峰",118.92],
+ ["辽宁·沈阳",123.43],["辽宁·大连",121.61],["辽宁·鞍山",123.00],
+ ["吉林·长春",125.32],["吉林·吉林市",126.55],
+ ["黑龙江·哈尔滨",126.53],["黑龙江·齐齐哈尔",123.92],["黑龙江·大庆",125.10],
+ ["江苏·南京",118.78],["江苏·苏州",120.58],["江苏·无锡",120.31],["江苏·常州",119.97],
+ ["江苏·南通",120.86],["江苏·徐州",117.18],["江苏·扬州",119.42],
+ ["浙江·杭州",120.15],["浙江·宁波",121.55],["浙江·温州",120.70],["浙江·嘉兴",120.76],
+ ["浙江·绍兴",120.58],["浙江·金华",119.65],["浙江·台州",121.42],
+ ["安徽·合肥",117.28],["安徽·芜湖",118.38],["安徽·阜阳",115.82],
+ ["福建·福州",119.30],["福建·厦门",118.09],["福建·泉州",118.68],
+ ["江西·南昌",115.86],["江西·赣州",114.93],["江西·九江",116.00],
+ ["山东·济南",117.12],["山东·青岛",120.38],["山东·烟台",121.39],["山东·潍坊",119.16],["山东·临沂",118.35],
+ ["河南·郑州",113.63],["河南·洛阳",112.45],["河南·开封",114.30],["河南·南阳",112.53],["河南·信阳",114.09],
+ ["湖北·武汉",114.31],["湖北·宜昌",111.29],["湖北·襄阳",112.12],
+ ["湖南·长沙",113.00],["湖南·株洲",113.13],["湖南·衡阳",112.57],["湖南·常德",111.69],
+ ["广东·广州",113.26],["广东·深圳",114.06],["广东·珠海",113.58],["广东·佛山",113.12],
+ ["广东·东莞",113.75],["广东·中山",113.39],["广东·惠州",114.42],["广东·汕头",116.68],
+ ["广东·湛江",110.36],["广东·潮州",116.62],["广东·揭阳",116.37],["广东·梅州",116.12],
+ ["广西·南宁",108.37],["广西·柳州",109.42],["广西·桂林",110.29],["广西·梧州",111.28],
+ ["海南·海口",110.32],["海南·三亚",109.51],
+ ["四川·成都",104.07],["四川·绵阳",104.68],["四川·南充",106.11],["四川·乐山",103.77],["四川·达州",107.50],
+ ["贵州·贵阳",106.71],["贵州·遵义",106.93],
+ ["云南·昆明",102.83],["云南·大理",100.27],["云南·曲靖",103.80],
+ ["西藏·拉萨",91.11],["西藏·日喀则",88.88],
+ ["陕西·西安",108.94],["陕西·宝鸡",107.14],["陕西·汉中",107.02],
+ ["甘肃·兰州",103.83],["甘肃·天水",105.72],["甘肃·酒泉",98.49],
+ ["青海·西宁",101.78],["青海·格尔木",94.90],
+ ["宁夏·银川",106.23],["宁夏·石嘴山",106.38],
+ ["新疆·乌鲁木齐",87.62],["新疆·喀什",75.99],["新疆·伊宁",81.28],["新疆·库尔勒",86.15],["新疆·哈密",93.51],
+ ["香港",114.17],["澳门",113.55],["台北",121.56],["高雄",120.31]
+];
+
+/* ---------------- 真太阳时：均时差（Spencer 公式，精度约 ±0.5 分钟） ---------------- */
+function equationOfTimeMinutes(y, m, d){
+  const start = Date.UTC(y, 0, 1);
+  const cur = Date.UTC(y, m - 1, d);
+  const n = Math.floor((cur - start) / 86400000) + 1;
+  const B = 2 * Math.PI * (n - 1) / 365;
+  return 229.18 * (0.000075 + 0.001868*Math.cos(B) - 0.032077*Math.sin(B)
+        - 0.014615*Math.cos(2*B) - 0.040849*Math.sin(2*B));
+}
+
+/* ---------------- 神煞表 ---------------- */
+const SHENSHA = (() => {
+  const T = {};
+  // 天乙贵人（以日干查地支）
+  T.tianyi  = {"甲":["丑","未"],"戊":["丑","未"],"庚":["丑","未"],"乙":["子","申"],"己":["子","申"],"丙":["亥","酉"],"丁":["亥","酉"],"壬":["卯","巳"],"癸":["卯","巳"],"辛":["午","寅"]};
+  // 文昌贵人
+  T.wenchang = {"甲":"巳","乙":"午","丙":"申","丁":"酉","戊":"申","己":"酉","庚":"亥","辛":"子","壬":"寅","癸":"卯"};
+  // 禄神
+  T.lushen = {"甲":"寅","乙":"卯","丙":"巳","丁":"午","戊":"巳","己":"午","庚":"申","辛":"酉","壬":"亥","癸":"子"};
+  // 羊刃（阳干）
+  T.yangren = {"甲":"卯","丙":"午","戊":"午","庚":"酉","壬":"子"};
+  // 金舆
+  T.jinyu = {"甲":"辰","乙":"巳","丙":"未","丁":"申","戊":"未","己":"申","庚":"戌","辛":"亥","壬":"丑","癸":"寅"};
+  // 三合局组（按地支序号 %4 分组）：0申子辰 1巳酉丑 2寅午戌 3亥卯未
+  T.yima   = ["寅","亥","申","巳"];   // 驿马
+  T.taohua = ["酉","午","卯","子"];   // 桃花（咸池）
+  T.huagai = ["辰","丑","戌","未"];   // 华盖
+  T.jiangxing = ["子","酉","午","卯"];// 将星
+  T.jiesha = ["巳","寅","亥","申"];   // 劫煞
+  T.zaisha = ["午","卯","子","酉"];   // 灾煞
+  // 红鸾（年支查）、天喜为红鸾对冲
+  T.hongluan = {"子":"卯","丑":"寅","寅":"丑","卯":"子","辰":"亥","巳":"戌","午":"酉","未":"申","申":"未","酉":"午","戌":"巳","亥":"辰"};
+  // 孤辰寡宿（年支三分组：亥子丑/寅卯辰/巳午未/申酉戌）
+  T.guchen = {"子":"寅","亥":"寅","丑":"寅","寅":"巳","卯":"巳","辰":"巳","巳":"申","午":"申","未":"申","申":"亥","酉":"亥","戌":"亥"};
+  T.guasu  = {"子":"戌","亥":"戌","丑":"戌","寅":"丑","卯":"丑","辰":"丑","巳":"辰","午":"辰","未":"辰","申":"未","酉":"未","戌":"未"};
+  // 天德贵人（月支查，可为干或支）、月德贵人（月支三合组查干）
+  T.tiande = {"寅":"丁","卯":"申","辰":"壬","巳":"辛","午":"亥","未":"甲","申":"癸","酉":"寅","戌":"丙","亥":"乙","子":"巳","丑":"庚"};
+  T.yuede  = {"寅":"丙","午":"丙","戌":"丙","申":"壬","子":"壬","辰":"壬","亥":"甲","卯":"甲","未":"甲","巳":"庚","酉":"庚","丑":"庚"};
+  // 日柱特例
+  T.kuigang = ["庚辰","庚戌","壬辰","戊戌"];
+  T.yinchayangcuo = ["丙子","丁丑","戊寅","辛卯","壬辰","癸巳","丙午","丁未","戊申","辛酉","壬戌","癸亥"];
+  T.shiedabai = ["甲辰","乙巳","壬申","丙申","丁亥","庚辰","戊戌","癸亥","辛巳","己丑"];
+  return T;
+})();
+
+/* ---------------- 工具函数 ---------------- */
+function ganWX(g){ return LunarUtil.WU_XING_GAN[g]; }
+function zhiWX(z){ return LunarUtil.WU_XING_ZHI[z]; }
+function zhiHide(z){ return LunarUtil.ZHI_HIDE_GAN[z]; }
+function shiShen(dayGan, gan){ return LunarUtil.SHI_SHEN[dayGan + gan]; }
+
+// 天干在某地支的十二长生（星运/自坐）
+function diShi(gan, zhi){
+  const ganIdx = GAN.indexOf(gan), zhiIdx = ZHI.indexOf(zhi);
+  let idx = CS_OFFSET[gan] + (ganIdx % 2 === 0 ? zhiIdx : -zhiIdx);
+  idx = (idx % 12 + 12) % 12;
+  return CHANG_SHENG[idx];
+}
+
+// 干支旬空
+function xunKong(ganzhi){
+  const idx = LunarUtil.getJiaZiIndex(ganzhi);
+  const xunStart = Math.floor(idx / 10) * 10;
+  return [ZHI[(xunStart + 10) % 12], ZHI[(xunStart + 11) % 12]];
+}
+
+const WX_SHENG = {"木":"水","火":"木","土":"火","金":"土","水":"金"}; // 值生键：水生木
+
+function calcShenSha(pillars, dayGan){
+  // pillars: [{key,label,gan,zhi,ganzhi}]，年柱在前
+  const yearZhi = pillars[0].zhi, monthZhi = pillars[1].zhi;
+  const yGroup = ZHI.indexOf(yearZhi) % 4, dGroup = ZHI.indexOf(pillars[2].zhi) % 4;
+  const marks = [[],[],[],[]];
+  const add = (i, name, big) => { const m = marks[i]; if(!m.includes(name)) m.push(name); };
+
+  pillars.forEach((p, i) => {
+    const z = p.zhi, g = p.gan;
+    if (SHENSHA.tianyi[dayGan].includes(z)) add(i, "天乙贵人", true);
+    if (SHENSHA.wenchang[dayGan] === z) add(i, "文昌贵人");
+    if (SHENSHA.lushen[dayGan] === z) add(i, "禄神");
+    if (SHENSHA.yangren[dayGan] === z) add(i, "羊刃");
+    if (SHENSHA.jinyu[dayGan] === z) add(i, "金舆");
+    if (SHENSHA.yima[yGroup] === z || SHENSHA.yima[dGroup] === z) add(i, "驿马");
+    if (SHENSHA.taohua[yGroup] === z || SHENSHA.taohua[dGroup] === z) add(i, "桃花", true);
+    if (SHENSHA.huagai[yGroup] === z || SHENSHA.huagai[dGroup] === z) add(i, "华盖");
+    if (SHENSHA.jiangxing[yGroup] === z || SHENSHA.jiangxing[dGroup] === z) add(i, "将星");
+    if (SHENSHA.jiesha[yGroup] === z || SHENSHA.jiesha[dGroup] === z) add(i, "劫煞");
+    if (SHENSHA.zaisha[yGroup] === z || SHENSHA.zaisha[dGroup] === z) add(i, "灾煞");
+    if (SHENSHA.hongluan[yearZhi] === z) add(i, "红鸾");
+    if (ZHI[(ZHI.indexOf(SHENSHA.hongluan[yearZhi]) + 6) % 12] === z) add(i, "天喜");
+    if (SHENSHA.guchen[yearZhi] === z) add(i, "孤辰");
+    if (SHENSHA.guasu[yearZhi] === z) add(i, "寡宿");
+    const td = SHENSHA.tiande[monthZhi];
+    if (td === z || td === g) add(i, "天德贵人", true);
+    if (SHENSHA.yuede[monthZhi] === g) add(i, "月德贵人", true);
+    if (i === 2 && SHENSHA.kuigang.includes(p.ganzhi)) add(i, "魁罡", true);
+    if (i === 2 && SHENSHA.yinchayangcuo.includes(p.ganzhi)) add(i, "阴差阳错");
+    if (i === 2 && SHENSHA.shiedabai.includes(p.ganzhi)) add(i, "十恶大败");
+  });
+  return marks;
+}
+
+function wuxingStats(pillars, dayGan){
+  const stat = {"金":0,"木":0,"水":0,"火":0,"土":0};
+  pillars.forEach(p => {
+    stat[ganWX(p.gan)]++;
+    stat[zhiWX(p.zhi)]++;
+    zhiHide(p.zhi).forEach(h => stat[ganWX(h)]++);
+  });
+  return stat;
+}
+
+function strengthScore(pillars, dayGan){
+  const dWX = ganWX(dayGan);
+  const ally = wx => wx === dWX || WX_SHENG[dWX] === wx; // 比劫与印为同党
+  let score = 0, maxScore = 0, details = [];
+
+  // 月令本气（得令）
+  const mgWX = zhiWX(pillars[1].zhi);
+  maxScore += 25;
+  if (ally(mgWX)) { score += 25; details.push("得令（月令" + mgWX + "）"); }
+
+  // 四柱天干（日干除外）
+  pillars.forEach((p, i) => {
+    if (i === 2) return;
+    maxScore += 10;
+    if (ally(ganWX(p.gan))) score += 10;
+  });
+  // 地支藏干
+  pillars.forEach(p => {
+    const hides = zhiHide(p.zhi);
+    const w = [8, 4, 2];
+    hides.forEach((h, k) => {
+      maxScore += w[k] || 2;
+      if (ally(ganWX(h))) score += w[k] || 2;
+    });
+  });
+
+  const pct = Math.round(score / maxScore * 100);
+  // 通根：日支藏干有同党；得势：其余天干有同党
+  const hasRoot = zhiHide(pillars[2].zhi).some(h => ally(ganWX(h)));
+  const allyGans = [pillars[0].gan, pillars[1].gan, pillars[3].gan].filter(g => ally(ganWX(g))).length;
+  if (!details.length) details.push("失令（月令" + mgWX + "）");
+  if (hasRoot) details.push("得地（日主坐" + pillars[2].zhi + "通根）"); else details.push("日主无根");
+  if (allyGans >= 2) details.push("得势（天干多同党）"); else if (allyGans === 0) details.push("天干无异党帮扶");
+  let verdict = pct >= 60 ? "身强" : (pct <= 40 ? "身弱" : "中和");
+  return { pct, verdict, details, mgWX };
+}
+
+/* ---------------- 界面辅助 ---------------- */
+let segVal = { gender: 1, cal: "solar" };
+function bindSeg(id, key, cb){
+  $("#" + id).querySelectorAll("button").forEach(b => {
+    b.addEventListener("click", () => {
+      $("#" + id).querySelectorAll("button").forEach(x => x.classList.remove("on"));
+      b.classList.add("on");
+      segVal[key] = b.dataset.v === "0" ? 0 : b.dataset.v;
+      if (cb) cb(b.dataset.v);
+    });
+  });
+}
+bindSeg("segGender", "gender");
+bindSeg("segCal", "cal", v => {
+  $("#rowSolar").style.display = v === "solar" ? "" : "none";
+  $("#rowLunar").style.display = v === "lunar" ? "" : "none";
+  $("#chkLeapWrap").style.display = v === "lunar" ? "" : "none";
+  $("#lbDate").textContent = v === "solar" ? "出生日期（公历）" : "出生日期（农历）";
+});
+
+// 时间下拉
+(function(){
+  const h = $("#inH");
+  for (let i = 0; i < 24; i++){
+    const o = document.createElement("option");
+    o.value = i;
+    o.textContent = String(i).padStart(2, "0") + "点　" + SHICHEN_NAME[Math.floor(((i + 1) % 24) / 2)];
+    h.appendChild(o);
+  }
+  h.value = 12;
+})();
+// 城市下拉
+(function(){
+  const sel = $("#inCity");
+  const none = document.createElement("option");
+  none.value = ""; none.textContent = "不校正（按北京时间）";
+  sel.appendChild(none);
+  CITIES.forEach((c, i) => {
+    const o = document.createElement("option");
+    o.value = i; o.textContent = c[0];
+    sel.appendChild(o);
+  });
+})();
+
+function toast(msg){
+  const t = $("#toast");
+  t.textContent = msg; t.style.display = "block";
+  clearTimeout(t._tm);
+  t._tm = setTimeout(() => t.style.display = "none", 2600);
+}
+function showError(msg){
+  const e = $("#errBox");
+  e.textContent = msg; e.style.display = "block";
+  setTimeout(() => e.style.display = "none", 5000);
+}
+/* ---------------- 主流程 ---------------- */
+function pad2(n){ return String(n).padStart(2, "0"); }
+
+function doPaipan(){
+  const name = $("#inName").value.trim() || "无名氏";
+  const gender = segVal.gender;
+  const isLunar = segVal.cal === "lunar";
+  const sect = parseInt($("#inSect").value, 10);
+
+  let y, m, d, h, min;
+  try {
+    if (isLunar){
+      y = parseInt($("#inLY").value, 10);
+      m = parseInt($("#inLM").value, 10);
+      d = parseInt($("#inLD").value, 10);
+      if ($("#inLeap").checked) m = -m;
+    } else {
+      y = parseInt($("#inY").value, 10);
+      m = parseInt($("#inM").value, 10);
+      d = parseInt($("#inD").value, 10);
+    }
+    h = parseInt($("#inH").value, 10);
+    min = parseInt($("#inMin").value, 10);
+    if (!y || !m || !d || isNaN(h)) throw new Error("请填写完整的出生日期时间");
+  } catch(e){ showError("输入有误：" + e.message); return; }
+
+  // 真太阳时校正（在公历时间上做，农历先转公历）
+  let solar, tstInfo = null;
+  try {
+    if (isLunar){
+      const lunar = Lunar.fromYmdHms(y, m, d, h, min, 0);
+      solar = lunar.getSolar();
+    } else {
+      solar = Solar.fromYmdHms(y, m, d, h, min, 0);
+    }
+  } catch(e){ showError("日期无效：" + e.message); return; }
+
+  const cityIdx = $("#inCity").value;
+  if (cityIdx !== ""){
+    const [cname, lon] = CITIES[parseInt(cityIdx, 10)];
+    const s = solar;
+    const lonMin = (lon - 120) * 4;
+    const eot = equationOfTimeMinutes(s.getYear(), s.getMonth(), s.getDay());
+    let totalMin = lonMin + eot;
+    let js = new Date(s.getYear(), s.getMonth() - 1, s.getDay(), s.getHour(), s.getMinute(), 0);
+    js = new Date(js.getTime() + totalMin * 60000);
+    tstInfo = { city: cname, lon, lonMin: Math.round(lonMin * 10) / 10, eot: Math.round(eot * 10) / 10, total: Math.round(totalMin * 10) / 10,
+      before: `${pad2(s.getHour())}:${pad2(s.getMinute())}`,
+      after: `${pad2(js.getHours())}:${pad2(js.getMinutes())}`,
+      dayShift: js.getDate() !== s.getDay() };
+    solar = Solar.fromYmdHms(js.getFullYear(), js.getMonth() + 1, js.getDate(), js.getHours(), js.getMinutes(), 0);
+  }
+
+  const lunar = solar.getLunar();
+  const ec = lunar.getEightChar();
+  ec.setSect(sect);
+
+  const pillars = [
+    { label: "年柱", gan: ec.getYearGan(), zhi: ec.getYearZhi() },
+    { label: "月柱", gan: ec.getMonthGan(), zhi: ec.getMonthZhi() },
+    { label: "日柱", gan: ec.getDayGan(), zhi: ec.getDayZhi() },
+    { label: "时柱", gan: ec.getTimeGan(), zhi: ec.getTimeZhi() },
+  ];
+  pillars.forEach(p => {
+    p.ganzhi = p.gan + p.zhi;
+    p.shiShenGan = (p.label === "日柱") ? "日元" : shiShen(ec.getDayGan(), p.gan);
+    p.hide = zhiHide(p.zhi);
+    p.shiShenZhi = p.hide.map(hg => shiShen(ec.getDayGan(), hg));
+    p.nayin = LunarUtil.NAYIN[p.ganzhi];
+    p.xingYun = diShi(ec.getDayGan(), p.zhi);   // 日主在此支的十二长生
+    p.ziZuo = diShi(p.gan, p.zhi);              // 本柱天干自坐
+    p.xk = xunKong(p.ganzhi);
+  });
+
+  const dayGan = ec.getDayGan();
+  const shenSha = calcShenSha(pillars, dayGan);
+  const wxStat = wuxingStats(pillars, dayGan);
+  const strength = strengthScore(pillars, dayGan);
+
+  // 大运
+  const yun = ec.getYun(gender, 2);
+  const daYun = yun.getDaYun(10);
+
+  render(name, gender, solar, lunar, tstInfo, sect, pillars, dayGan, shenSha, wxStat, strength, yun, daYun);
+  $("#resultArea").style.display = "block";
+  $("#resultArea").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function render(name, gender, solar, lunar, tst, sect, pillars, dayGan, shenSha, wxStat, strength, yun, daYun){
+  // 基本信息
+  const leap = lunar.getMonth() < 0;
+  const shichenIdx = Math.floor(((solar.getHour() + 1) % 24) / 2);
+  $("#infoGrid").innerHTML = `
+    <div><span class="tag-gender">${gender === 1 ? "乾造" : "坤造"}</span><b style="font-size:16px;color:var(--ink)">${name}</b></div>
+    <div><b>公历</b>${solar.toYmdHms().substring(0, 16)}</div>
+    <div><b>农历</b>${lunar.getYearInGanZhi()}年 ${leap ? "闰" : ""}${lunar.getMonthInChinese()}月${lunar.getDayInChinese()}</div>
+    <div><b>生肖</b>${SHENG_XIAO[ZHI.indexOf(lunar.getYearZhi())]}</div>
+    <div><b>星座</b>${solar.getXingZuo()}</div>
+    <div><b>时辰</b>${SHICHEN_NAME[shichenIdx]}（${SHICHEN_RANGE[shichenIdx]}）</div>
+    <div><b>日主</b>${dayGan}（${ganWX(dayGan)}）</div>`;
+
+  if (tst){
+    $("#tstNote").innerHTML = `🕐 真太阳时校正（${tst.city}，东经 ${tst.lon}°）：北京时间 ${tst.before}
+      → 经度差 <em>${tst.lonMin > 0 ? "+" : ""}${tst.lonMin}分</em> + 均时差 <em>${tst.eot > 0 ? "+" : ""}${tst.eot}分</em>
+      = 真太阳时 <em>${tst.after}</em>${tst.dayShift ? "（<em>已跨日，按校正后日期排盘</em>）" : ""}。`;
+  } else {
+    $("#tstNote").innerHTML = `🕐 未做真太阳时校正（按北京时间排盘）。选择出生地可获得更精确的时柱。`;
+  }
+
+  // 四柱表
+  const rows = [];
+  rows.push(`<div class="rh"></div>` + pillars.map(p => `<div class="hd">${p.label}</div>`).join(""));
+  rows.push(`<div class="rh">十神</div>` + pillars.map(p => `<div class="shishen">${p.shiShenGan}</div>`).join(""));
+  rows.push(`<div class="rh">天干</div>` + pillars.map(p => `<div>${gzGan(p.gan)}<span class="shishen">${ganWX(p.gan)}</span></div>`).join(""));
+  rows.push(`<div class="rh">地支</div>` + pillars.map(p => `<div>${gzZhi(p.zhi)}<span class="shishen">${zhiWX(p.zhi)}</span></div>`).join(""));
+  rows.push(`<div class="rh">藏干<br>十神</div>` + pillars.map(p => `<div class="hidegan">${p.hide.map((h, k) => `<span style="color:${WX_COLOR[ganWX(h)]}">${h}<i>${p.shiShenZhi[k]}</i></span>`).join("<br>")}</div>`).join(""));
+  rows.push(`<div class="rh">星运</div>` + pillars.map(p => `<div class="xiushi">${p.xingYun}</div>`).join(""));
+  rows.push(`<div class="rh">自坐</div>` + pillars.map(p => `<div class="xiushi">${p.ziZuo}</div>`).join(""));
+  rows.push(`<div class="rh">纳音</div>` + pillars.map(p => `<div class="nayin">${p.nayin}</div>`).join(""));
+  rows.push(`<div class="rh">旬空</div>` + pillars.map(p => `<div class="shishen">${p.xk.join("　")}</div>`).join(""));
+  rows.push(`<div class="rh">神煞</div>` + pillars.map((p, i) => `<div class="shensha">${shenSha[i].length ? shenSha[i].map(s => `<span class="${s.length >= 4 ? "" : "big"}">${s}</span>`).join("") : "—"}</div>`).join(""));
+  $("#bzGrid").innerHTML = rows.join("");
+
+  // 大运
+  $("#dyNote").innerHTML = `出生后 ${yun.getStartYear()} 年 ${yun.getStartMonth()} 个月 ${yun.getStartDay()} 天起运（3天折1年，按节气间隔推算）；点击任一大运查看该步 10 个流年。`;
+
+  const nowYear = new Date().getFullYear();
+  $("#dyStrip").innerHTML = daYun.map((dy, i) => {
+    const cur = nowYear >= dy.getStartYear() && nowYear <= dy.getEndYear();
+    const gz = dy.getGanZhi();
+    const gzHtml = gz
+      ? `<div class="dy-gz"><span style="color:${WX_COLOR[ganWX(gz[0])]}">${gz[0]}</span><span style="color:${WX_COLOR[zhiWX(gz[1])]}">${gz[1]}</span></div>`
+      : `<div class="dy-gz" style="font-size:12px;color:var(--muted)">起运前</div>`;
+    return `<div class="dy-col${cur ? " cur" : ""}" data-i="${i}">
+      <div class="dy-age">${dy.getStartAge()}–${dy.getEndAge()}岁</div>
+      ${gzHtml}
+      <div class="dy-yr">${dy.getStartYear()}–${dy.getEndYear()}</div>
+    </div>`;
+  }).join("");
+  $("#dyStrip").querySelectorAll(".dy-col").forEach(col => {
+    col.addEventListener("click", () => {
+      const dy = daYun[parseInt(col.dataset.i, 10)];
+      const ln = dy.getLiuNian(10);
+      $("#lnPanel").innerHTML = ln.map(x =>
+        `<div class="ln-chip"><b>${x.getGanZhi()[0]}${x.getGanZhi()[1]}</b><small>${x.getYear()}年 · ${x.getAge()}岁</small></div>`).join("");
+      $("#lnPanel").classList.add("show");
+      $("#lnPanel").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+  });
+  $("#lnPanel").classList.remove("show");
+
+  // 五行
+  const total = Object.values(wxStat).reduce((a, b) => a + b, 0);
+  $("#wxBars").innerHTML = Object.entries(wxStat).map(([wx, n]) => `
+    <div class="wx-row">
+      <div class="name"><span class="wx-dot" style="background:${WX_COLOR[wx]}"></span>${wx}</div>
+      <div class="wx-track"><div class="wx-fill" style="width:${n / total * 100}%;background:${WX_COLOR[wx]}"></div></div>
+      <div class="num">${n} 个 · ${Math.round(n / total * 100)}%</div>
+    </div>`).join("");
+
+  // 命宫胎元身宫 + 强弱
+  const ec = lunar.getEightChar();
+  $("#miscGrid").innerHTML = `
+    <div class="misc-item"><div class="k">命宫</div><div class="v">${ec.getMingGong()}</div><div class="s">${LunarUtil.NAYIN[ec.getMingGong()]}</div></div>
+    <div class="misc-item"><div class="k">胎元</div><div class="v">${ec.getTaiYuan()}</div><div class="s">${LunarUtil.NAYIN[ec.getTaiYuan()]}</div></div>
+    <div class="misc-item"><div class="k">身宫</div><div class="v">${ec.getShenGong()}</div><div class="s">${LunarUtil.NAYIN[ec.getShenGong()]}</div></div>
+    <div class="misc-item"><div class="k">月令</div><div class="v">${pillars[1].zhi}（${zhiWX(pillars[1].zhi)}）</div><div class="s">提纲司令</div></div>`;
+
+  $("#stPin").style.left = `calc(${strength.pct}% - 2px)`;
+  $("#stVerdict").innerHTML = `日主 <b>${dayGan}（${ganWX(dayGan)}）</b> 简化评分：<b>${strength.verdict}</b>（同党力量占比约 ${strength.pct}%）`;
+  $("#stSub").textContent = strength.details.join("；") + "。以印比为一党、食伤财官杀为一党的粗略力量对比，未计合冲刑害，仅供参考。";
+}
+
+function gzGan(g){
+  const wx = ganWX(g);
+  return `<div class="ganzhi" style="color:${WX_COLOR[wx]};border-color:${WX_COLOR[wx]};background:${WX_COLOR[wx]}14">${g}</div>`;
+}
+function gzZhi(z){
+  const wx = zhiWX(z);
+  return `<div class="ganzhi" style="color:${WX_COLOR[wx]};border-color:${WX_COLOR[wx]};background:${WX_COLOR[wx]}14">${z}</div>`;
+}
+
+/* ---------------- 事件 ---------------- */
+$("#btnGo").addEventListener("click", doPaipan);
+$("#btnRandom").addEventListener("click", () => {
+  const rnd = n => Math.floor(Math.random() * n);
+  $("#segCal").querySelectorAll("button")[0].click();
+  $("#inY").value = 1950 + rnd(70);
+  $("#inM").value = 1 + rnd(12);
+  $("#inD").value = 1 + rnd(28);
+  $("#inH").value = rnd(24);
+  $("#inMin").selectedIndex = rnd(6);
+  $("#inCity").value = 1 + rnd(CITIES.length - 1);
+  $("#inName").value = "";
+  doPaipan();
+});
+document.addEventListener("keydown", e => { if (e.key === "Enter" && document.activeElement.closest("#inputCard")) doPaipan(); });
+
+// 默认示例：随机一次
+window.addEventListener("load", () => $("#btnRandom").click());
+</script>
+</body>
+</html>
